@@ -1,0 +1,74 @@
+Context (simplified)
+We operate two mobile apps (React Native with Expo), on iOS and Android:
+Responder App
+• Location tracking
+• Regular location updates to the backend
+• Receiving incidents (including data + location)
+• Navigation to the target
+• Incident report once the issue is resolved
+User App
+• Notification when an alarm is triggered
+• Disable alarms
+• Trigger a “mobile panic”
+Problem
+We occasionally see the Responder App stops sending location updates. The root cause is unclear: it could be a software bug, but it could also be poor connectivity, connection drops, or OS background restrictions.
+We need to ensure that we reliably know where our responders are - and, equally important, detect when a responder is not reachable, so that we don’t accidentally assign an incident to someone who may not receive it.
+Assignment
+Please propose an architecture for a “permanent location update” feature (Responder App + backend). The focus should be on robustness, detectability of failures, resource efficiency, and a design that realistically works on both iOS and Android (React Native + Expo).
+Requirements / Guiding Questions
+1) Mobile App (Client)
+• How would you structure location collection and sending (components, states, data flow)?
+• How would you deal with background execution and OS constraints on iOS and Android?
+• How would you ensure updates are resource-efficient?
+• e.g. every X seconds or only when movement exceeds Y meters (feel free to propose reasonable defaults)
+• What should happen in the following situations:
+• App in background / app killed / OS stops background tasks
+• Permission changes / location services disabled
+• Battery saver / low power mode
+• Flaky or missing connectivity (offline, captive portals, Wi-Fi ↔ cellular switching)
+• What telemetry/logging would you generate on the device (minimal and privacy-aware)?
+2) Backend
+• How would you determine reliability and “liveness” of a responder?
+• e.g. heartbeats, expected update intervals, tolerances, state models (“online”, “degraded”, “offline”)
+• What monitoring and alerting would you implement?
+• How would you detect missing updates and react to them?
+• e.g. server-side heuristics, escalation, reassignment rules, optional ping/ack mechanisms
+• What should the backend not do, in order to avoid unnecessary complexity?
+3) Incident Delegation / Product Logic
+• How would you prevent incidents from being assigned to responders who are likely unreachable?
+• Which decisions belong to the backend vs. the app?
+• What UX or signals would you give to responders (e.g. “connectivity degraded”)?
+4) Cross-Platform / React Native + Expo
+• Please explicitly state assumptions and constraints related to React Native + Expo:
+• What would you solve using Expo APIs?
+• Where would you plan native modules or configuration changes if needed?
+• What pragmatic steps would you take if Expo limitations reduce reliability?
+Deliverables
+1) Design Memo (1–2 pages, e.g. Markdown or Google Doc)
+Suggested structure:
+• Problem statement, goals, and non-goals
+• Proposed architecture (mobile + backend), diagram optional
+• Failure modes and mitigations
+• Observability (telemetry, monitoring)
+• Trade-offs (battery vs. accuracy vs. reliability vs. complexity)
+• Rollout / migration strategy (incremental, no big bang)
+• Open questions and assumptions
+2) Short Loom Video (5–8 minutes)
+Please walk us through your approach:
+• How did you think about the problem?
+• Which decisions are most critical, and why?
+• What would you validate next (tests, experiments, metrics)?
+Time Frame
+• Please plan 2–3 hours for the memo (video is additional but short).
+• Submission ideally by Friday 23.01. COB
+Evaluation Criteria (for transparency)
+We will primarily evaluate:
+• Structured reasoning and explicit assumptions
+• Realistic handling of mobile constraints (iOS/Android background behavior)
+• Robustness (failure modes, recovery, detectability)
+• Resource efficiency (battery, network)
+• Observability: how would we reliably detect and diagnose the issue?
+• Incremental, practical implementation strategy
+
+
+
