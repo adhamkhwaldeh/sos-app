@@ -1,28 +1,23 @@
-import { StyleSheet } from 'react-native';
-
-import { ThemedText } from '@/src/components/themed-text';
-import { ThemedView } from '@/src/components/themed-view';
-
-import { db } from '@/src/db/client';
-import { locations } from '@/src/db/schema';
+import { LocalizationContext } from '@/src/localization/LocalizationContext';
+import { useLocationStore } from '@/src/store/useLocationStore';
 import { DB_EVENTS, dbEventEmitter } from '@/src/utils/eventEmitter';
 import { clearAllLogs } from '@/src/utils/locationLogger';
-import { desc } from 'drizzle-orm';
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { useEffect, useState } from 'react';
-import { AppState, FlatList, View } from 'react-native';
+import { useContext, useEffect } from 'react';
+import { AppState, FlatList, StyleSheet, View } from 'react-native';
 import { Appbar, Text } from 'react-native-paper';
 
-
 export default function HomeScreen() {
-  const [refreshKey, setRefreshKey] = useState(0);
-  const { data: logs } = useLiveQuery(
-    db.select().from(locations).orderBy(desc(locations.id)),
-    [refreshKey]
-  );
+
+  const { translations } = useContext(LocalizationContext);
+
+  const { logs, fetchLogs } = useLocationStore();
+
+  useEffect(() => {
+    fetchLogs();
+  }, []);
 
   const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
+    fetchLogs();
   };
 
   useEffect(() => {
@@ -51,7 +46,7 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1, }}>
       <Appbar style={{ backgroundColor: 'rgba(0, 210, 238, 1)' }}>
-        <Appbar.Content title={`Location Logs (${logs?.length || '0'})`} />
+        <Appbar.Content title={`${translations.locationLogs} (${logs?.length || '0'})`} />
         <Appbar.Action icon="refresh" onPress={handleRefresh} />
         <Appbar.Action icon="delete" onPress={clearAllLogs} />
       </Appbar>
@@ -61,24 +56,25 @@ export default function HomeScreen() {
           data={logs}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item: log }) => (
-            <ThemedView style={styles.logItem}>
-              <ThemedText type="defaultSemiBold">
+            <View style={styles.logItem}>
+              {/* type="defaultSemiBold" */}
+              <Text >
                 {new Date(log.timestampUTC).toLocaleTimeString()} - {log.action}
-              </ThemedText>
-              <ThemedText style={styles.logCoords}>
+              </Text>
+              <Text style={styles.logCoords}>
                 Lat: {log.latitude.toFixed(6)}, Lon: {log.longitude.toFixed(6)}
-              </ThemedText>
+              </Text>
               {log.batteryLevel !== null && (
-                <ThemedText style={styles.logDetail}>
-                  Battery: {(log.batteryLevel * 100).toFixed(0)}%
-                </ThemedText>
+                <Text style={styles.logDetail}>
+                  {translations.battery}: {(log.batteryLevel * 100).toFixed(0)}%
+                </Text>
               )}
-            </ThemedView>
+            </View>
           )}
           contentContainerStyle={{ flexGrow: 1 }}
           ListEmptyComponent={
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <ThemedText style={styles.noLogs}>No logs yet. Start tracking!</ThemedText>
+              <Text style={styles.noLogs}>{translations.noLogs}</Text>
             </View>
           }
         />
@@ -86,9 +82,9 @@ export default function HomeScreen() {
       </View>
 
       <View style={{ flex: 0, padding: 16, backgroundColor: 'rgba(255,255,255,0.1)' }}>
-        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Instructions</Text>
+        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{translations.Instructions}</Text>
         <Text>
-          Logs are saved every time a location update is received, even in the background or when the app is closed.
+          {translations.InstructionsMessage}
         </Text>
       </View>
 

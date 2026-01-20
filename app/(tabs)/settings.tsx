@@ -3,19 +3,23 @@ import { ThemeMode, useTheme } from '@/src/context/ThemeContext';
 import DimensHelper from '@/src/helpers/DimensHelper';
 import { LocalizationContext } from '@/src/localization/LocalizationContext';
 import { Fonts } from '@/src/styles/theme';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Appbar, Button, Divider, List, Switch, Text, useTheme as usePaperTheme } from 'react-native-paper';
+import { Appbar, Button, Divider, List, Menu, Switch, Text, useTheme as usePaperTheme } from 'react-native-paper';
 
 export default function SettingsScreen() {
 
     const { translations, setAppLanguage } = useContext(LocalizationContext);
     const handleSetLanguage = async (language: string) => {
-        setAppLanguage(language);
+        await setAppLanguage(language);
     };
 
     const { themeMode, setThemeMode, theme } = useTheme();
     const paperTheme = usePaperTheme();
+
+    const [menuVisible, setMenuVisible] = useState(false);
+    const openMenu = () => setMenuVisible(true);
+    const closeMenu = () => setMenuVisible(false);
 
     const handleThemeChange = (mode: ThemeMode) => {
         setThemeMode(mode);
@@ -29,11 +33,11 @@ export default function SettingsScreen() {
 
             <ScrollView style={styles.container}>
                 <List.Section>
-                    <List.Subheader style={{ fontFamily: Fonts.rounded }}>Appearance</List.Subheader>
+                    <List.Subheader style={{ fontFamily: Fonts.rounded }}>{translations.appearance}</List.Subheader>
 
                     <List.Item
-                        title="Dark Mode"
-                        description="Toggle between light and dark theme"
+                        title={translations.darkMode}
+                        description={translations.toggleBetweenLightAndDarkTheme}
                         left={props => <List.Icon {...props} icon="brightness-6" />}
                         right={() => (
                             <Switch
@@ -47,8 +51,8 @@ export default function SettingsScreen() {
                     <Divider />
 
                     <List.Item
-                        title="Follow System"
-                        description="Use system theme settings"
+                        title={translations.followSystem}
+                        description={translations.useSystemThemeSettings}
                         left={props => <List.Icon {...props} icon="cellphone-cog" />}
                         right={() => (
                             <Switch
@@ -65,27 +69,29 @@ export default function SettingsScreen() {
                     </Text>
 
                     {/* style={styles.normalButtonMargin} */}
-                    <Button
-                        mode="contained"
-
-                        onPress={() => {
-                            if (translations.getLanguage() == 'ar') {
-                                handleSetLanguage('en');
-                            } else {
-                                handleSetLanguage('ar');
-                            }
-                            // navigation.pop();
-                        }}>
-                        {/* style={styles.buttonText} */}
-                        <Text >{translations.changeLanguage}</Text>
-                    </Button>
+                    <Menu
+                        visible={menuVisible}
+                        onDismiss={closeMenu}
+                        anchor={
+                            <Button
+                                mode="contained"
+                                onPress={openMenu}
+                                style={{ marginHorizontal: DimensHelper.marginMd }}
+                            >
+                                {translations.changeLanguage} ({translations.getLanguage().toUpperCase()})
+                            </Button>
+                        }>
+                        <Menu.Item onPress={() => { handleSetLanguage('en'); closeMenu(); }} title="English" />
+                        <Menu.Item onPress={() => { handleSetLanguage('ar'); closeMenu(); }} title="العربية" />
+                        <Menu.Item onPress={() => { handleSetLanguage('de'); closeMenu(); }} title="Deutsch" />
+                    </Menu>
 
                 </View>
 
                 <List.Section>
-                    <List.Subheader style={{ fontFamily: Fonts.rounded }}>About</List.Subheader>
+                    <List.Subheader style={{ fontFamily: Fonts.rounded }}>{translations.about}</List.Subheader>
                     <List.Item
-                        title="Version"
+                        title={translations.version}
                         description="1.0.0"
                         left={props => <List.Icon {...props} icon="information" />}
                     />

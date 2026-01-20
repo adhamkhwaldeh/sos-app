@@ -2,6 +2,8 @@ import { db } from '@/src/db/client';
 import { notifications } from '@/src/db/schema';
 import { DB_EVENTS, dbEventEmitter } from '@/src/utils/eventEmitter';
 import messaging from '@react-native-firebase/messaging';
+import { useNotificationStore } from '../store/useNotificationStore';
+
 import * as Notifications from 'expo-notifications';
 import { PermissionsAndroid, Platform } from 'react-native';
 
@@ -81,7 +83,12 @@ export const saveNotification = async (remoteMessage: any) => {
                 timestamp: sentTime ? new Date(sentTime).toISOString() : new Date().toISOString(),
             });
             console.log('[saveNotification] Saved to database');
+
+            // Update Zustand Store
+            useNotificationStore.getState().fetchNotifications();
+
             dbEventEmitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
+
 
             // Show local notification using expo-notifications
             await showLocalNotification(
@@ -166,7 +173,12 @@ export const clearAllNotifications = async () => {
     try {
         await db.delete(notifications);
         console.log('All notifications cleared');
+
+        // Update Zustand Store
+        useNotificationStore.getState().clearNotifications();
+
         dbEventEmitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
+
     } catch (error) {
         console.error('Failed to clear notifications:', error);
     }

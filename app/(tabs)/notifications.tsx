@@ -1,27 +1,22 @@
-import { db } from '@/src/db/client';
-import { notifications } from '@/src/db/schema';
+import { LocalizationContext } from '@/src/localization/LocalizationContext';
+import { useNotificationStore } from '@/src/store/useNotificationStore';
+import { Fonts } from '@/src/styles/theme';
 import { DB_EVENTS, dbEventEmitter } from '@/src/utils/eventEmitter';
 import { clearAllNotifications, showLocalNotification } from '@/src/utils/notificationService';
-import { desc } from 'drizzle-orm';
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import * as Notifications from 'expo-notifications';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { AppState, FlatList, StyleSheet, View } from 'react-native';
-import { Appbar } from 'react-native-paper';
-
-import { ThemedText } from '@/src/components/themed-text';
-import { ThemedView } from '@/src/components/themed-view';
-import { Fonts } from '@/src/styles/theme';
+import { Appbar, Text } from 'react-native-paper';
 
 export default function TabTwoScreen() {
-  const [refreshKey, setRefreshKey] = useState(0);
-  const { data: logs } = useLiveQuery(
-    db.select().from(notifications).orderBy(desc(notifications.id)),
-    [refreshKey]
-  );
+  const { notifications: logs, fetchNotifications } = useNotificationStore();
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
+    fetchNotifications();
   };
 
   useEffect(() => {
@@ -47,21 +42,23 @@ export default function TabTwoScreen() {
     };
   }, []);
 
+  const { translations } = useContext(LocalizationContext);
+
   return (
     <View style={{ flex: 1 }}>
       <Appbar style={{ backgroundColor: 'rgba(0, 210, 238, 1)' }}>
-        <Appbar.Content title={`Notifications (${logs?.length || '0'})`} titleStyle={{ fontFamily: Fonts.rounded }} />
+        <Appbar.Content title={`${translations.notifications} (${logs?.length || '0'})`} titleStyle={{ fontFamily: Fonts.rounded }} />
         <Appbar.Action icon="bell-ring" onPress={async () => {
           const { status } = await Notifications.requestPermissionsAsync();
           if (status !== 'granted') {
-            alert('Permission to show notifications was denied');
+            alert(translations.notificationPermissionDenied);
             return;
           }
 
           console.log("Attempting to show test notification...");
           const res = await showLocalNotification(
-            "Test Notification",
-            "This is a test notification from the app bar."
+            translations.testNotificationTitle,
+            translations.testNotificationBody
           );
           console.log('Notification result:', res);
           if (res) {
@@ -79,22 +76,23 @@ export default function TabTwoScreen() {
           data={logs}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item: notification }) => (
-            <ThemedView style={styles.notificationItem}>
-              <ThemedText type="defaultSemiBold" style={styles.notificationTitle}>
+            <View style={styles.notificationItem}>
+              {/* type="defaultSemiBold"  */}
+              <Text style={styles.notificationTitle}>
                 {notification.title}
-              </ThemedText>
-              <ThemedText style={styles.notificationContent}>
+              </Text>
+              <Text style={styles.notificationContent}>
                 {notification.content}
-              </ThemedText>
-              <ThemedText style={styles.notificationTimestamp}>
+              </Text>
+              <Text style={styles.notificationTimestamp}>
                 {new Date(notification.timestamp).toLocaleString()}
-              </ThemedText>
-            </ThemedView>
+              </Text>
+            </View>
           )}
           contentContainerStyle={{ flexGrow: 1, padding: 16 }}
           ListEmptyComponent={
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <ThemedText style={styles.noNotifications}>No notifications yet.</ThemedText>
+              <Text style={styles.noNotifications}>{translations.noNotifications}</Text>
             </View>
           }
         />

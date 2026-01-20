@@ -1,39 +1,41 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
 import { HapticTab } from '@/src/components/haptic-tab';
 import { IconSymbol } from '@/src/components/ui/icon-symbol';
-import { useColorScheme } from '@/src/hooks/use-color-scheme';
+import { LocalizationContext } from '@/src/localization/LocalizationContext';
 import { Colors } from '@/src/styles/theme';
+import { Tabs } from 'expo-router';
+import React, { useContext } from 'react';
+import { useTheme } from 'react-native-paper';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const theme = useTheme();
+
+  const { translations } = useContext(LocalizationContext);
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: Colors[theme.dark ? 'dark' : 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: translations.home,
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="notification"
+        name="notifications"
         options={{
-          title: 'Notification',
+          title: translations.notifications,
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="bell.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: translations.settings,
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="gear" color={color} />,
         }}
       />

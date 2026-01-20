@@ -1,12 +1,14 @@
 import LocalizedStrings from "react-native-localization";
-import english from './en'
-import arabic from './ar'
+import arabic from './ar';
+import german from './de';
+import english from './en';
 
 export const DEFAULT_LANGUAGE = 'en';
 
 const translations = {
     en: english,
-    ar: arabic
+    ar: arabic,
+    de: german
 };
 
 export default new LocalizedStrings(translations);

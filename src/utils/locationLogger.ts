@@ -7,7 +7,9 @@ const LOG_FILE_URI = FileSystem.Paths.cache.info().uri + 'location_logs.txt';
 
 import { db } from '../db/client';
 import { locations } from '../db/schema';
+import { useLocationStore } from '../store/useLocationStore';
 import { DB_EVENTS, dbEventEmitter } from './eventEmitter';
+
 
 export const appendLocationLog = async (source: string, location: any) => {
     const timestamp = new Date().toISOString();
@@ -37,7 +39,12 @@ export const appendLocationLog = async (source: string, location: any) => {
             action: source,
             rawJson: JSON.stringify(location),
         });
+
+        // 3. Update Zustand Store
+        useLocationStore.getState().fetchLogs();
+
         dbEventEmitter.emit(DB_EVENTS.LOGS_UPDATED);
+
 
         console.log(`Logged to DB and file: ${logEntry.trim()}`);
     } catch (error) {
@@ -55,7 +62,11 @@ export const clearAllLogs = async () => {
         // Clear DB
         await db.delete(locations);
 
+        // 3. Update Zustand Store
+        useLocationStore.getState().clearLogs();
+
         console.log('All logs cleared (File and DB)');
+
     } catch (error) {
         console.error('Failed to clear logs:', error);
     }

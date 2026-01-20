@@ -2,6 +2,7 @@ import React, { createContext, useState } from 'react';
 // import i18n from 'i18n-js';
 import LoggingHelper from '@/src/helpers/LoggingHelper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Updates from 'expo-updates';
 import { I18nManager } from 'react-native';
 import * as RNLocalize from 'react-native-localize';
 import translations, { DEFAULT_LANGUAGE } from './translations';
@@ -10,31 +11,35 @@ const APP_LANGUAGE = 'appLanguage';
 
 export const LocalizationContext = createContext({
   translations,
-  setAppLanguage: (language: string) => { },
+  setAppLanguage: async (language: string) => { },
   appLanguage: DEFAULT_LANGUAGE,
-  initializeAppLanguage: () => { },
+  initializeAppLanguage: async () => { },
 });
 
 export const LocalizationProvider: React.FC<any> = ({ children }) => {
   const [appLanguage, setAppLanguage] = useState(DEFAULT_LANGUAGE);
   // const [appRTL, setAppRTL] = useState(appLanguage == 'ar');
 
-  const setLanguage = (language: string) => {
+  const applyLanguage = (language: string) => {
     translations.setLanguage(language);
-    // children.forceUpdate();
     var isRTL = language == 'ar';
-
     LoggingHelper.log('is RTL: ' + isRTL);
     I18nManager.forceRTL(isRTL);
-    // i18n.locale = language;//1234
+    I18nManager.allowRTL(isRTL);
     setAppLanguage(language);
+  };
 
-    // SetGlobalLanguage.
-    // setAppRTL(isRTL)
-    AsyncStorage.setItem(APP_LANGUAGE, language);
-    // I18nManager.forceRTL(appRTL);
-    // setAppRTL(isRTL)
-    // children.forceUpdate();
+  const setLanguage = async (language: string) => {
+    applyLanguage(language);
+
+    await AsyncStorage.setItem(APP_LANGUAGE, language);
+
+    // Restart the app to apply RTL changes and refresh the UI
+    try {
+      await Updates.reloadAsync();
+    } catch (error) {
+      LoggingHelper.log('Error reloading app: ' + error);
+    }
   };
 
   const initializeAppLanguage = async () => {
@@ -45,7 +50,6 @@ export const LocalizationProvider: React.FC<any> = ({ children }) => {
       const supportedLocaleCodes = translations.getAvailableLanguages();
       const phoneLocaleCodes = RNLocalize.getLocales().map(
         locale => locale.languageCode,
-        // isRTl => locale.isRTL,
       );
       phoneLocaleCodes.some(code => {
         if (supportedLocaleCodes.includes(code)) {
@@ -53,9 +57,10 @@ export const LocalizationProvider: React.FC<any> = ({ children }) => {
           return true;
         }
       });
-      setLanguage(localeCode);
+      applyLanguage(localeCode);
+      await AsyncStorage.setItem(APP_LANGUAGE, localeCode);
     } else {
-      setLanguage(currentLanguage);
+      applyLanguage(currentLanguage);
     }
   };
 
