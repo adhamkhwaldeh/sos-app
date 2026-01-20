@@ -1,4 +1,4 @@
-// import { ThemeMode, useTheme } from '@/src/context/ThemeContext';
+import { useThemeContext } from '@/src/context/ThemeContext';
 import DimensHelper from '@/src/helpers/DimensHelper';
 import { LocalizationContext } from '@/src/localization/LocalizationContext';
 import { Fonts } from '@/src/styles/theme';
@@ -10,14 +10,14 @@ import { Dropdown } from 'react-native-paper-dropdown';
 export default function SettingsScreen() {
 
     const { translations, setAppLanguage } = useContext(LocalizationContext);
+    const theme = useTheme();
+    const { isDark, setThemeMode } = useThemeContext();
+
     const handleSetLanguage = async (language: string) => {
         await setAppLanguage(language);
     };
 
-    const theme = useTheme();
-
     const [selectedLanguage, setSelectedLanguage] = useState(translations.getLanguage());
-
 
     const languageOptions = [
         { label: 'English', value: 'en' },
@@ -25,10 +25,14 @@ export default function SettingsScreen() {
         { label: 'Deutsch', value: 'de' },
     ];
 
+    const handleThemeToggle = async (value: boolean) => {
+        await setThemeMode(value ? 'dark' : 'light');
+    };
+
     return (
         <View style={{ flex: 1 }}>
-            <Appbar style={{ backgroundColor: 'rgba(0, 210, 238, 1)' }}>
-                <Appbar.Content title={translations.settings} titleStyle={{ fontFamily: Fonts.rounded, color: 'white' }} />
+            <Appbar style={{ backgroundColor: theme.colors.primary }}>
+                <Appbar.Content title={translations.settings} titleStyle={theme.fonts.titleLarge} />
             </Appbar>
 
             <ScrollView style={styles.container}>
@@ -41,31 +45,12 @@ export default function SettingsScreen() {
                         left={props => <List.Icon {...props} icon="brightness-6" />}
                         right={() => (
                             <Switch
-                                value={theme.dark}
-                                onValueChange={(value) => {
-                                    theme.dark = value;
-
-                                    // handleThemeChange(value ? 'dark' : 'light');
-                                }}
+                                value={isDark}
+                                onValueChange={handleThemeToggle}
                                 color="rgba(0, 210, 238, 1)"
                             />
                         )}
                     />
-
-                    {/* <Divider />
-
-                    <List.Item
-                        title={translations.followSystem}
-                        description={translations.useSystemThemeSettings}
-                        left={props => <List.Icon {...props} icon="cellphone-cog" />}
-                        right={() => (
-                            <Switch
-                                value={themeMode === 'system'}
-                                onValueChange={(value) => handleThemeChange(value ? 'system' : theme)}
-                                color="rgba(0, 210, 238, 1)"
-                            />
-                        )}
-                    /> */}
 
                 </List.Section>
                 <View>
@@ -73,17 +58,19 @@ export default function SettingsScreen() {
                         {translations.profileDetails}
                     </Text>
 
-                    <Dropdown
-                        label={translations.changeLanguage}
-
-                        options={languageOptions}
-                        value={selectedLanguage}
-                        onSelect={(value: any) => {
-                            setSelectedLanguage(value);
-                            handleSetLanguage(value);
-                        }}
-                        mode="outlined"
-                    />
+                    <View style={{ margin: DimensHelper.marginMd }}>
+                        <Dropdown
+                            label={translations.changeLanguage}
+                            options={languageOptions}
+                            value={selectedLanguage}
+                            onSelect={(value: any) => {
+                                setSelectedLanguage(value);
+                                handleSetLanguage(value);
+                            }}
+                            hideMenuHeader={true}
+                            mode="outlined"
+                        />
+                    </View>
 
                 </View>
 

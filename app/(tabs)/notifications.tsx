@@ -1,13 +1,12 @@
-import { DB_EVENTS, dbEventEmitter } from '@/src/eventBus/eventEmitter';
+import { DB_EVENTS, emitter } from '@/src/eventBus/eventEmitter';
 import { LocalizationContext } from '@/src/localization/LocalizationContext';
 import { addManualNotification, clearAllNotifications, showLocalNotification } from '@/src/services/notificationService';
 import { useNotificationStore } from '@/src/store/useNotificationStore';
-import { Fonts } from '@/src/styles/theme';
 import * as Notifications from 'expo-notifications';
 import { useContext, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { AppState, FlatList, StyleSheet, View } from 'react-native';
-import { Appbar, Button, Modal, Portal, Text, TextInput } from 'react-native-paper';
+import { Appbar, Button, Modal, Portal, Text, TextInput, useTheme } from 'react-native-paper';
 
 interface NotificationFormData {
   title: string;
@@ -19,6 +18,7 @@ export default function TabTwoScreen() {
   const { notifications: logs, fetchNotifications } = useNotificationStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { translations } = useContext(LocalizationContext);
+  const theme = useTheme();
 
   const { control, handleSubmit, reset, formState: { errors } } = useForm<NotificationFormData>({
     defaultValues: {
@@ -43,7 +43,7 @@ export default function TabTwoScreen() {
       handleRefresh();
     };
 
-    const sub = dbEventEmitter.on(DB_EVENTS.NOTIFICATIONS_UPDATED, onNotificationsUpdated);
+    emitter.on(DB_EVENTS.NOTIFICATIONS_UPDATED, onNotificationsUpdated);
 
     // 2. Refresh when app comes to foreground
     const subscription = AppState.addEventListener('change', nextAppState => {
@@ -54,7 +54,7 @@ export default function TabTwoScreen() {
     });
 
     return () => {
-      dbEventEmitter.off(sub);
+      emitter.removeListener(DB_EVENTS.NOTIFICATIONS_UPDATED, onNotificationsUpdated);
       subscription.remove();
     };
   }, []);
@@ -67,8 +67,8 @@ export default function TabTwoScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Appbar style={{ backgroundColor: 'rgba(0, 210, 238, 1)' }}>
-        <Appbar.Content title={`${translations.notifications} (${logs?.length || '0'})`} titleStyle={{ fontFamily: Fonts.rounded }} />
+      <Appbar style={{ backgroundColor: theme.colors.primary }}>
+        <Appbar.Content title={`${translations.notifications} (${logs?.length || '0'})`} titleStyle={theme.fonts.titleLarge} />
         <Appbar.Action icon="plus" onPress={() => setIsModalVisible(true)} />
         <Appbar.Action icon="bell-ring" onPress={async () => {
           const { status } = await Notifications.requestPermissionsAsync();
@@ -103,11 +103,11 @@ export default function TabTwoScreen() {
                 <Text style={styles.notificationTitle}>
                   {notification.title}
                 </Text>
-                {notification.status && (
+                {/* {notification.status && (
                   <Text style={styles.notificationStatus}>
                     {notification.status}
                   </Text>
-                )}
+                )} */}
               </View>
               <Text style={styles.notificationContent}>
                 {notification.content}

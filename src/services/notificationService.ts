@@ -1,6 +1,6 @@
 import { db } from '@/src/db/client';
 import { notifications } from '@/src/db/schema';
-import { DB_EVENTS, dbEventEmitter } from '@/src/eventBus/eventEmitter';
+import { DB_EVENTS, emitter } from '@/src/eventBus/eventEmitter';
 import {
     AuthorizationStatus,
     getInitialNotification,
@@ -98,7 +98,7 @@ export const saveNotification = async (remoteMessage: any) => {
             // Update Zustand Store
             useNotificationStore.getState().fetchNotifications();
 
-            dbEventEmitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
+            emitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
 
 
             // Show local notification using expo-notifications
@@ -126,7 +126,7 @@ export const addManualNotification = async (title: string, content: string, stat
         // Update Zustand Store
         useNotificationStore.getState().fetchNotifications();
 
-        dbEventEmitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
+        emitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
 
         // Show local notification
         await showLocalNotification(title, content);
@@ -209,7 +209,7 @@ export const clearAllNotifications = async () => {
         // Update Zustand Store
         useNotificationStore.getState().clearNotifications();
 
-        dbEventEmitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
+        emitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
 
     } catch (error) {
         console.error('Failed to clear notifications:', error);

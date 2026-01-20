@@ -1,7 +1,7 @@
 import { HapticTab } from '@/src/components/haptic-tab';
 import { IconSymbol } from '@/src/components/ui/icon-symbol';
 import { LocalizationContext } from '@/src/localization/LocalizationContext';
-import { Colors } from '@/src/styles/theme';
+// import { Colors } from '@/src/styles/theme';
 import { Tabs } from 'expo-router';
 import React, { useContext } from 'react';
 import { useTheme } from 'react-native-paper';
@@ -14,7 +14,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[theme.dark ? 'dark' : 'light'].tint,
+        tabBarActiveTintColor: theme.colors.primary,
         headerShown: false,
         tabBarButton: HapticTab,
       }}>

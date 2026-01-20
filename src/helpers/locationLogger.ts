@@ -5,7 +5,7 @@ import * as FileSystem from 'expo-file-system';
 // const LOG_FILE_URI = (FileSystem as any).cacheDirectory + 'location_logs.txt';
 const LOG_FILE_URI = FileSystem.Paths.cache.info().uri + 'location_logs.txt';
 
-import { DB_EVENTS, dbEventEmitter } from '@/src/eventBus/eventEmitter';
+import { DB_EVENTS, emitter } from '@/src/eventBus/eventEmitter';
 import { db } from '../db/client';
 import { locations } from '../db/schema';
 import { useLocationStore } from '../store/useLocationStore';
@@ -43,7 +43,7 @@ export const appendLocationLog = async (source: string, location: any) => {
         // 3. Update Zustand Store
         useLocationStore.getState().fetchLogs();
 
-        dbEventEmitter.emit(DB_EVENTS.LOGS_UPDATED);
+        emitter.emit(DB_EVENTS.LOGS_UPDATED);
 
 
         console.log(`Logged to DB and file: ${logEntry.trim()}`);

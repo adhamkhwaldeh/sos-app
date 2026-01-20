@@ -1,12 +1,14 @@
-import { DB_EVENTS, dbEventEmitter } from '@/src/eventBus/eventEmitter';
+import { DB_EVENTS, emitter } from '@/src/eventBus/eventEmitter';
 import { clearAllLogs } from '@/src/helpers/locationLogger';
 import { LocalizationContext } from '@/src/localization/LocalizationContext';
 import { useLocationStore } from '@/src/store/useLocationStore';
 import { useContext, useEffect } from 'react';
 import { AppState, FlatList, StyleSheet, View } from 'react-native';
-import { Appbar, Text } from 'react-native-paper';
+import { Appbar, Text, useTheme } from 'react-native-paper';
 
 export default function HomeScreen() {
+
+  const theme = useTheme();
 
   const { translations } = useContext(LocalizationContext);
 
@@ -27,7 +29,7 @@ export default function HomeScreen() {
       handleRefresh();
     };
 
-    const sub = dbEventEmitter.on(DB_EVENTS.LOGS_UPDATED, onLogsUpdated);
+    const sub = emitter.on(DB_EVENTS.LOGS_UPDATED, onLogsUpdated);
 
     // 2. Refresh when app comes to foreground
     const subscription = AppState.addEventListener('change', nextAppState => {
@@ -38,15 +40,15 @@ export default function HomeScreen() {
     });
 
     return () => {
-      dbEventEmitter.off(sub);
+      emitter.off(DB_EVENTS.LOGS_UPDATED, onLogsUpdated);
       subscription.remove();
     };
   }, []);
 
   return (
     <View style={{ flex: 1, }}>
-      <Appbar style={{ backgroundColor: 'rgba(0, 210, 238, 1)' }}>
-        <Appbar.Content title={`${translations.locationLogs} (${logs?.length || '0'})`} />
+      <Appbar style={{ backgroundColor: theme.colors.primary }}>
+        <Appbar.Content title={`${translations.locationLogs} (${logs?.length || '0'})`} titleStyle={theme.fonts.titleLarge} />
         <Appbar.Action icon="refresh" onPress={handleRefresh} />
         <Appbar.Action icon="delete" onPress={clearAllLogs} />
       </Appbar>

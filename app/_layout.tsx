@@ -6,14 +6,14 @@ import 'react-native-reanimated';
 import { useBackgroundGeolocation } from '@/src/hooks/useBackgroundGeolocation';
 import '@/src/services/tasks/HeadlessTask';
 
-// import { ThemeProvider, useTheme } from '@/src/context/ThemeContext';
 import { StatusBarContext, StatusBarProvider } from '@/src/context/StatusBarContext';
+import { ThemeProvider, useThemeContext } from '@/src/context/ThemeContext';
 import { migrationPromise, runMigrations } from '@/src/db/client';
 import { LocalizationProvider } from '@/src/localization/LocalizationContext';
 import { notificationService, saveNotification } from '@/src/services/notificationService';
 import { getMessaging, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
 import { useContext, useEffect } from 'react';
-import { MD3DarkTheme, MD3LightTheme, PaperProvider, useTheme } from 'react-native-paper';
+import { PaperProvider as PaperProviderBase } from 'react-native-paper';
 
 // Register background handler
 setBackgroundMessageHandler(getMessaging(), async (remoteMessage) => {
@@ -22,7 +22,7 @@ setBackgroundMessageHandler(getMessaging(), async (remoteMessage) => {
 });
 
 function RootLayoutContent() {
-  // const { theme } = useTheme();
+  const { isDark, paperTheme } = useThemeContext();
 
   useEffect(() => {
     const init = async () => {
@@ -44,17 +44,15 @@ function RootLayoutContent() {
 
   useBackgroundGeolocation();
 
-  const theme = useTheme();
-
-  const navigationTheme = theme.dark ? DarkTheme : DefaultTheme;
+  const navigationTheme = isDark ? DarkTheme : DefaultTheme;
 
   const { setStatusBarAll } = useContext(StatusBarContext);
 
   useEffect(() => {
     setTimeout(() => {
-      setStatusBarAll(theme.colors.primary, 'light-content', false);
+      setStatusBarAll(paperTheme.colors.primary, 'light-content', false);
     }, 500);
-  }, []);
+  }, [paperTheme.colors.primary, setStatusBarAll]);
 
   return (
 
@@ -63,7 +61,7 @@ function RootLayoutContent() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
-      <StatusBar style={theme.dark ? 'light' : 'dark'} />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
     </NavigationThemeProvider>
 
 
@@ -71,26 +69,23 @@ function RootLayoutContent() {
 }
 
 export default function RootLayout() {
-  const theme = useTheme();
-  const paperTheme = theme.dark ? MD3DarkTheme : MD3LightTheme;
+  return (
+    <ThemeProvider>
+      <RootLayoutWithTheme />
+    </ThemeProvider>
+  );
+}
+
+function RootLayoutWithTheme() {
+  const { paperTheme } = useThemeContext();
 
   return (
-
-    <StatusBarProvider>
-      {/* <Provider store={Store}> */}
-      {/* theme={currentTheme.dark ? darkTheme : theme} */}
-        <PaperProvider theme={paperTheme} >
-          <LocalizationProvider>
-            <RootLayoutContent />
-          </LocalizationProvider>
-        </PaperProvider>
-      {/* </Provider> */}
-    </StatusBarProvider>
-
-    // 
-    // <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-    //   <RootLayoutContent />
-    // </SafeAreaView>
-    // </ThemeProvider>
+    <PaperProviderBase theme={paperTheme}>
+      <StatusBarProvider>
+        <LocalizationProvider>
+          <RootLayoutContent />
+        </LocalizationProvider>
+      </StatusBarProvider>
+    </PaperProviderBase>
   );
 }
