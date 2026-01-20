@@ -1,89 +1,60 @@
-import { useEffect } from 'react';
-import BackgroundGeolocation, {
-    Location,
-    Subscription,
-} from 'react-native-background-geolocation';
-
+// import { geolocationService } from '@/src/services/geolocationService';
+import { expoGeolocationService as geolocationService } from '@/src/services/expoGeolocationService';
 import { appendLocationLog } from '@/src/utils/locationLogger';
+import { useEffect } from 'react';
 
 export const useBackgroundGeolocation = () => {
     useEffect(() => {
-        const onLocation: Subscription = BackgroundGeolocation.onLocation((location: Location) => {
-            console.log('[onLocation]', location);
-            appendLocationLog('Foreground', location);
-        });
+        let unsubscribeLocation: (() => void) | null = null;
+        let unsubscribeMotionChange: (() => void) | null = null;
+        let unsubscribeActivityChange: (() => void) | null = null;
+        let unsubscribeProviderChange: (() => void) | null = null;
 
-        const onMotionChange: Subscription = BackgroundGeolocation.onMotionChange((event) => {
-            console.log('[onMotionChange]', event);
-        });
+        const initializeGeolocation = async () => {
+            try {
+                // Initialize the geolocation service
+                await geolocationService.initialize({
+                    desiredAccuracy: 'High',
+                    distanceFilter: 0,
+                    locationUpdateInterval: 1000,
+                    fastestLocationUpdateInterval: 1000,
+                    disableStopDetection: true,
+                    allowIdenticalLocations: true,
+                });
 
-        const onActivityChange: Subscription = BackgroundGeolocation.onActivityChange((event) => {
-            console.log('[onActivityChange]', event);
-        });
+                // Subscribe to location updates
+                unsubscribeLocation = geolocationService.onLocation((location) => {
+                    console.log('[onLocation]', location);
+                    appendLocationLog('Foreground', location);
+                });
 
-        const onProviderChange: Subscription = BackgroundGeolocation.onProviderChange((event) => {
-            console.log('[onProviderChange]', event);
-        });
+                // Subscribe to motion change events
+                unsubscribeMotionChange = geolocationService.onMotionChange((event) => {
+                    console.log('[onMotionChange]', event);
+                });
 
-        // const onHeartbeat: Subscription = BackgroundGeolocation.onHeartbeat((event) => {
-        //     console.log('[onHeartbeat]', event);
-        // });
+                // Subscribe to activity change events
+                unsubscribeActivityChange = geolocationService.onActivityChange((event) => {
+                    console.log('[onActivityChange]', event);
+                });
 
-
-        BackgroundGeolocation.ready({
-            activity: {
-
-            },
-            persistence: {
-
-            },
-            geolocation: {
-                desiredAccuracy: BackgroundGeolocation.DesiredAccuracy.High,
-                // distanceFilter: 10,
-
-                distanceFilter: 0,
-                locationUpdateInterval: 1000,
-                fastestLocationUpdateInterval: 1000,
-                disableStopDetection: true,
-                allowIdenticalLocations: true,
-            },
-            // heartbeatInterval: 60,
-            // foregroundService: true,
-            app: {
-                startOnBoot: true,
-                stopOnTerminate: false,
-                heartbeatInterval: 60,
-                enableHeadless: true,
-
-                // notification: {
-
-                // },
-            },
-            logger: {
-                debug: true,
-                logLevel: BackgroundGeolocation.LogLevel.Verbose,
-                logMaxDays: 5 * 24 * 60 * 60,
-            },
-            reset: true, // Reset config on every app launch for development
-        }).then(async (state) => {
-            console.log('- BackgroundGeolocation is ready: ', state);
-            if (!state.enabled) {
-                const state = await BackgroundGeolocation.start();
-                console.log('- Start success');
+                // Subscribe to provider change events
+                unsubscribeProviderChange = geolocationService.onProviderChange((event) => {
+                    console.log('[onProviderChange]', event);
+                });
+            } catch (error) {
+                console.error('Failed to initialize geolocation:', error);
             }
+        };
 
-            // Force the plugin to enter "moving" state immediately
-            await BackgroundGeolocation.changePace(true);
-            console.log('- changePace(true) executed');
-        });
+        initializeGeolocation();
 
         return () => {
             console.log('- Clear the hook');
-            onLocation.remove();
-            onMotionChange.remove();
-            onActivityChange.remove();
-            onProviderChange.remove();
-            // onHeartbeat.remove();
+            unsubscribeLocation?.();
+            unsubscribeMotionChange?.();
+            unsubscribeActivityChange?.();
+            unsubscribeProviderChange?.();
         };
     }, []);
 };

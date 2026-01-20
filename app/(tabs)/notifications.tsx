@@ -1,8 +1,8 @@
+import { DB_EVENTS, dbEventEmitter } from '@/src/eventBus/eventEmitter';
 import { LocalizationContext } from '@/src/localization/LocalizationContext';
+import { addManualNotification, clearAllNotifications, showLocalNotification } from '@/src/services/notificationService';
 import { useNotificationStore } from '@/src/store/useNotificationStore';
 import { Fonts } from '@/src/styles/theme';
-import { DB_EVENTS, dbEventEmitter } from '@/src/utils/eventEmitter';
-import { addManualNotification, clearAllNotifications, showLocalNotification } from '@/src/utils/notificationService';
 import * as Notifications from 'expo-notifications';
 import { useContext, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';

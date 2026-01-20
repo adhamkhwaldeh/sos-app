@@ -10,14 +10,14 @@ import { useBackgroundGeolocation } from '@/src/hooks/useBackgroundGeolocation';
 import { ThemeProvider } from '@/src/context/ThemeContext';
 import { migrationPromise, runMigrations } from '@/src/db/client';
 import { LocalizationProvider } from '@/src/localization/LocalizationContext';
+import { notificationService, saveNotification } from '@/src/services/notificationService';
 import { StatusBarContext, StatusBarProvider } from '@/src/status_bar/StatusBarContext';
-import { notificationService, saveNotification } from '@/src/utils/notificationService';
-import messaging from '@react-native-firebase/messaging';
+import { getMessaging, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
 import { useContext, useEffect } from 'react';
 import { MD3DarkTheme, MD3LightTheme, PaperProvider, useTheme } from 'react-native-paper';
 
 // Register background handler
-messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+setBackgroundMessageHandler(getMessaging(), async (remoteMessage) => {
   console.log('Message handled in the background!', remoteMessage);
   await saveNotification(remoteMessage);
 });

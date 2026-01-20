@@ -26,9 +26,9 @@ export default function SettingsScreen() {
 
     return (
         <View style={{ flex: 1 }}>
-            <Appbar.Header style={{ backgroundColor: 'rgba(0, 210, 238, 1)' }}>
+            <Appbar style={{ backgroundColor: 'rgba(0, 210, 238, 1)' }}>
                 <Appbar.Content title={translations.settings} titleStyle={{ fontFamily: Fonts.rounded, color: 'white' }} />
-            </Appbar.Header>
+            </Appbar>
 
             <ScrollView style={styles.container}>
                 <List.Section>

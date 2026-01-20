@@ -5,10 +5,10 @@ import * as FileSystem from 'expo-file-system';
 // const LOG_FILE_URI = (FileSystem as any).cacheDirectory + 'location_logs.txt';
 const LOG_FILE_URI = FileSystem.Paths.cache.info().uri + 'location_logs.txt';
 
+import { DB_EVENTS, dbEventEmitter } from '@/src/eventBus/eventEmitter';
 import { db } from '../db/client';
 import { locations } from '../db/schema';
 import { useLocationStore } from '../store/useLocationStore';
-import { DB_EVENTS, dbEventEmitter } from './eventEmitter';
 
 
 export const appendLocationLog = async (source: string, location: any) => {

@@ -1,8 +1,18 @@
 import { db } from '@/src/db/client';
 import { notifications } from '@/src/db/schema';
-import { DB_EVENTS, dbEventEmitter } from '@/src/utils/eventEmitter';
-import messaging from '@react-native-firebase/messaging';
+import { DB_EVENTS, dbEventEmitter } from '@/src/eventBus/eventEmitter';
+import {
+    AuthorizationStatus,
+    getInitialNotification,
+    getMessaging,
+    getToken,
+    onMessage,
+    onNotificationOpenedApp,
+    requestPermission
+} from '@react-native-firebase/messaging';
 import { useNotificationStore } from '../store/useNotificationStore';
+
+const messaging = getMessaging();
 
 import * as Notifications from 'expo-notifications';
 import { PermissionsAndroid, Platform } from 'react-native';
@@ -80,7 +90,7 @@ export const saveNotification = async (remoteMessage: any) => {
             await db.insert(notifications).values({
                 title: notification.title || 'No Title',
                 content: notification.body || 'No Content',
-                status: 'received',
+                // status: 'received',
                 timestamp: sentTime ? new Date(sentTime).toISOString() : new Date().toISOString(),
             });
             console.log('[saveNotification] Saved to database');
@@ -133,17 +143,17 @@ class NotificationService {
             );
             return granted === PermissionsAndroid.RESULTS.GRANTED;
         } else {
-            const authStatus = await messaging().requestPermission();
+            const authStatus = await requestPermission(messaging);
             const enabled =
-                authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-                authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+                authStatus === AuthorizationStatus.AUTHORIZED ||
+                authStatus === AuthorizationStatus.PROVISIONAL;
             return enabled;
         }
     }
 
     async getFcmToken() {
         try {
-            const fcmToken = await messaging().getToken();
+            const fcmToken = await getToken(messaging);
             if (fcmToken) {
                 console.log('FCM Token:', fcmToken);
                 return fcmToken;
@@ -156,19 +166,18 @@ class NotificationService {
 
     setupListeners() {
         // Foreground message listener
-        const unsubscribeForeground = messaging().onMessage(async (remoteMessage) => {
+        const unsubscribeForeground = onMessage(messaging, async (remoteMessage) => {
             console.log('Foreground Message received:', JSON.stringify(remoteMessage));
             await saveNotification(remoteMessage);
         });
 
         // Background/Quit state message listener (when app is opened via notification)
-        messaging().onNotificationOpenedApp((remoteMessage) => {
+        onNotificationOpenedApp(messaging, (remoteMessage) => {
             console.log('Notification caused app to open from background state:', remoteMessage.notification);
         });
 
         // Check if app was opened from a quit state
-        messaging()
-            .getInitialNotification()
+        getInitialNotification(messaging)
             .then((remoteMessage) => {
                 if (remoteMessage) {
                     console.log('Notification caused app to open from quit state:', remoteMessage.notification);

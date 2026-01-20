@@ -1,5 +1,5 @@
+import { geolocationService } from '@/src/services/geolocationService';
 import { appendLocationLog } from '@/src/utils/locationLogger';
-import BackgroundGeolocation from 'react-native-background-geolocation';
 import { runMigrations } from './src/db/client';
 
 const HeadlessTask = async (event: any) => {
@@ -22,4 +22,4 @@ const HeadlessTask = async (event: any) => {
     }
 };
 
-BackgroundGeolocation.registerHeadlessTask(HeadlessTask);
+geolocationService.registerHeadlessTask(HeadlessTask);
