@@ -80,6 +80,7 @@ export const saveNotification = async (remoteMessage: any) => {
             await db.insert(notifications).values({
                 title: notification.title || 'No Title',
                 content: notification.body || 'No Content',
+                status: 'received',
                 timestamp: sentTime ? new Date(sentTime).toISOString() : new Date().toISOString(),
             });
             console.log('[saveNotification] Saved to database');
@@ -99,6 +100,28 @@ export const saveNotification = async (remoteMessage: any) => {
         } catch (error) {
             console.error('[saveNotification] Failed to save to database:', error);
         }
+    }
+};
+
+export const addManualNotification = async (title: string, content: string, status: string) => {
+    try {
+        await db.insert(notifications).values({
+            title,
+            content,
+            //status,
+            timestamp: new Date().toISOString(),
+        });
+        console.log('[addManualNotification] Saved to database');
+
+        // Update Zustand Store
+        useNotificationStore.getState().fetchNotifications();
+
+        dbEventEmitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
+
+        // Show local notification
+        await showLocalNotification(title, content);
+    } catch (error) {
+        console.error('[addManualNotification] Failed to save to database:', error);
     }
 };
 

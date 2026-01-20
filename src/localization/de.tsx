@@ -23,5 +23,12 @@ export default {
     battery: "Batterie",
     notificationPermissionDenied: "Die Berechtigung zum Anzeigen von Benachrichtigungen wurde verweigert",
     testNotificationTitle: "Test-Benachrichtigung",
-    testNotificationBody: "Dies ist eine Test-Benachrichtigung aus der App-Leiste."
+    testNotificationBody: "Dies ist eine Test-Benachrichtigung aus der App-Leiste.",
+    addNotification: "Benachrichtigung hinzufügen",
+    title: "Titel",
+    message: "Nachricht",
+    status: "Status",
+    save: "Speichern",
+    cancel: "Abbrechen",
+    fieldRequired: "Dieses Feld ist erforderlich"
 };

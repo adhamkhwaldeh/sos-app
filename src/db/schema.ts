@@ -18,5 +18,6 @@ export const notifications = sqliteTable("notifications", {
     id: integer("id").primaryKey({ autoIncrement: true }),
     title: text("title"),
     content: text("content"),
+    // status: text("status"),
     timestamp: text("timestamp").notNull(),
 });

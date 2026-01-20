@@ -27,7 +27,7 @@ export default function HomeScreen() {
       handleRefresh();
     };
 
-    dbEventEmitter.on(DB_EVENTS.LOGS_UPDATED, onLogsUpdated);
+    const sub = dbEventEmitter.on(DB_EVENTS.LOGS_UPDATED, onLogsUpdated);
 
     // 2. Refresh when app comes to foreground
     const subscription = AppState.addEventListener('change', nextAppState => {
@@ -38,7 +38,7 @@ export default function HomeScreen() {
     });
 
     return () => {
-      dbEventEmitter.off(DB_EVENTS.LOGS_UPDATED, onLogsUpdated);
+      dbEventEmitter.off(sub);
       subscription.remove();
     };
   }, []);

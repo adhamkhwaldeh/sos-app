@@ -1,4 +1,3 @@
-import { ThemedView } from '@/src/components/themed-view';
 import { ThemeMode, useTheme } from '@/src/context/ThemeContext';
 import DimensHelper from '@/src/helpers/DimensHelper';
 import { LocalizationContext } from '@/src/localization/LocalizationContext';
@@ -26,7 +25,7 @@ export default function SettingsScreen() {
     };
 
     return (
-        <ThemedView style={{ flex: 1 }}>
+        <View style={{ flex: 1 }}>
             <Appbar.Header style={{ backgroundColor: 'rgba(0, 210, 238, 1)' }}>
                 <Appbar.Content title={translations.settings} titleStyle={{ fontFamily: Fonts.rounded, color: 'white' }} />
             </Appbar.Header>
@@ -97,7 +96,7 @@ export default function SettingsScreen() {
                     />
                 </List.Section>
             </ScrollView>
-        </ThemedView>
+        </View>
     );
 }
 

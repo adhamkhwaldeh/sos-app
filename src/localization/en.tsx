@@ -22,5 +22,12 @@ export default {
   battery: "Battery",
   notificationPermissionDenied: "Permission to show notifications was denied",
   testNotificationTitle: "Test Notification",
-  testNotificationBody: "This is a test notification from the app bar."
+  testNotificationBody: "This is a test notification from the app bar.",
+  addNotification: "Add Notification",
+  title: "Title",
+  message: "Message",
+  status: "Status",
+  save: "Save",
+  cancel: "Cancel",
+  fieldRequired: "This field is required"
 };

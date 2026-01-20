@@ -1,6 +1,6 @@
 # SOS Responder App 🚨
 
-An emergency response mobile application designed for first responders to receive SOS alerts and provide real-time assistance with location tracking.
+An emergency response mobile application designed for first responders to receive SOS alerts and provide assistance with  real-time location tracking.
 
 ---
 
@@ -19,7 +19,7 @@ An emergency response mobile application designed for first responders to receiv
 
 The SOS Responder App enables emergency responders to:
 - Receive and respond to SOS alerts in real-time
-- Share their location with dispatch and emergency requesters
+- Share their location according to different modes
 - Optimize battery usage through intelligent tracking modes
 
 ---
@@ -35,7 +35,7 @@ The app implements **intelligent location tracking** with different modes and up
 | Mode | Update Interval | Distance Threshold | Description |
 |------|-----------------|--------------------|-------------|
 | **Off Shift** | N/A (or 15 min) | N/A | No tracking (default) or periodic updates |
-| **Idle** | On Movement | Significant Change | Updates only when moving significantly |
+| **Idle** | 10 seconds | 10 meters | Updates every 5-10 minutes as bulk updates or after significant movement |
 | **On Duty** | 5 seconds | 5 meters | High frequency for active availability |
 | **Emergency** | 1 second | None | Real-time streaming for critical response |
 | **Save Mode** | 15 minutes | N/A | Ultra-low power (auto-activated) |
@@ -57,16 +57,16 @@ Each mode implements different update strategies:
 - Responder can change preference in settings
 
 **Idle Mode**
-- Low-frequency location updates
-- Significant location change detection only
+- Update according configured criteria (time and distance)
+- Bulk update periodically (5-10 minutes)
 - Optimized for battery preservation
 - Suitable for responders on standby
 
 **On Duty Mode**
-- Regular interval location updates
+- Regular interval location updates (5-10 seconds)
 - Balanced accuracy and battery usage
 - Enables dispatch to see responder availability and proximity
-- Automatic geofencing for coverage areas
+- Automatic geofencing for coverage areas (configurable moving to Emergency mode)
 
 **Emergency Mode** *(Real-Time)*
 - **Instant location updates** - every 1 second, no distance threshold
@@ -142,8 +142,11 @@ Each tracking record contains the following data:
 | `longitude` | Float | GPS longitude coordinate |
 | `latitude` | Float | GPS latitude coordinate |
 | `timestamp` | DateTime (UTC) | Time of location capture |
+| `accuracy` | Float | Horizontal accuracy in meters |
+| `altitude` | Float | Altitude in meters above sea level |
 | `speed` | Float | Current speed (m/s or km/h) |
-| `direction` | Float | Heading/bearing in degrees (0-360) |
+| `heading` | Float | Heading/bearing in degrees (0-360) |
+| `batteryLevel` | Float | Device battery percentage at time of capture |
 
 #### Location Availability & Liveness
 
@@ -515,6 +518,3 @@ When a responder delegates the mission:
 | `responders[].linkedResponderId` | String | ID of responder providing location (if delegated) |
 
 ---
-
-*Documentation will be updated as features are developed.*
-

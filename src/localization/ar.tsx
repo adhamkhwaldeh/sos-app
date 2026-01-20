@@ -23,5 +23,12 @@ export default {
   battery: "البطارية",
   notificationPermissionDenied: "تم رفض إذن إظهار التنبيهات",
   testNotificationTitle: "تنبيه تجريبي",
-  testNotificationBody: "هذا تنبيه تجريبي من شريط التطبيق."
+  testNotificationBody: "هذا تنبيه تجريبي من شريط التطبيق.",
+  addNotification: "إضافة إشعار",
+  title: "العنوان",
+  message: "الرسالة",
+  status: "الحالة",
+  save: "حفظ",
+  cancel: "إلغاء",
+  fieldRequired: "هذا الحقل مطلوب"
 };
