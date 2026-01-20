@@ -61,7 +61,10 @@ export default function HomeScreen() {
             <View style={styles.logItem}>
               {/* type="defaultSemiBold" */}
               <Text >
-                {new Date(log.timestampUTC).toLocaleTimeString()} - {log.action}
+                {log.timestampUTC} - {log.action}
+              </Text>
+              <Text >
+                {new Date(log.timestampUTC).toLocaleString()} - {log.action}
               </Text>
               <Text style={styles.logCoords}>
                 Lat: {log.latitude.toFixed(6)}, Lon: {log.longitude.toFixed(6)}

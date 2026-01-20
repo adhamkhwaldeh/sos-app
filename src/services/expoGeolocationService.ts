@@ -40,13 +40,127 @@ type ActivityChangeCallback = (event: any) => void;
 type ProviderChangeCallback = (event: any) => void;
 type HeadlessTaskHandler = (event: HeadlessTaskEvent) => Promise<void>;
 
+// Forward declaration - will be set in ExpoGeolocationService
+let serviceInstance: ExpoGeolocationService;
+
+/**
+ * Define TaskManager tasks at module load time (REQUIRED by Expo)
+ * This MUST happen synchronously before any async operations
+ */
+const initializeModuleTasks = () => {
+    try {
+        console.log('🔄 Initializing TaskManager tasks...');
+
+        // Define location update task
+        TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
+            console.log('🎯 [LOCATION TASK TRIGGERED] ' + LOCATION_TASK_NAME);
+            console.log('📍 Data:', JSON.stringify(data));
+            console.log('⚠️ Error:', error);
+
+            if (error) {
+                console.error('❌ Location task error:', error);
+                return;
+            }
+
+            if (data) {
+                const { locations } = data as any;
+                if (locations && locations.length > 0) {
+                    const location = locations[0];
+                    console.log('✅ [Location Update from Task]', {
+                        latitude: location.coords?.latitude,
+                        longitude: location.coords?.longitude,
+                        accuracy: location.coords?.accuracy,
+                        timestamp: location.timestamp,
+                    });
+
+                    // Update background task status
+                    if (serviceInstance) {
+                        serviceInstance.getBackgroundTaskStatus().lastUpdate = new Date();
+                        serviceInstance.getBackgroundTaskStatus().updateCount++;
+                        serviceInstance.getBackgroundTaskStatus().isTracking = true;
+                        console.log('📊 Background Task Status Update #' + serviceInstance.getBackgroundTaskStatus().updateCount);
+                    }
+
+                    // Call registered callbacks
+                    if (serviceInstance) {
+                        console.log('📢 Calling location callbacks, count:', serviceInstance.locationCallbacks.size);
+                        serviceInstance.locationCallbacks.forEach((callback) => {
+                            try {
+                                callback(location);
+                            } catch (err) {
+                                console.error('❌ Callback error:', err);
+                            }
+                        });
+
+                        // Call headless task handler if registered
+                        if (serviceInstance.headlessTaskHandler) {
+                            try {
+                                await serviceInstance.headlessTaskHandler({
+                                    name: 'location',
+                                    params: location,
+                                });
+                            } catch (err) {
+                                console.error('❌ Headless handler error:', err);
+                            }
+                        }
+                    } else {
+                        console.warn('⚠️ serviceInstance is null - callbacks not called!');
+                    }
+                } else {
+                    console.log('⚠️ No locations in data');
+                }
+            } else {
+                console.log('⚠️ Data is null');
+            }
+        });
+
+        // Define motion change task
+        TaskManager.defineTask(MOTION_CHANGE_TASK_NAME, async ({ data, error }) => {
+            console.log('🎯 [MOTION CHANGE TASK TRIGGERED] ' + MOTION_CHANGE_TASK_NAME);
+            if (error) {
+                console.error('❌ Motion change task error:', error);
+                return;
+            }
+
+            if (data) {
+                console.log('✅ [Motion Change from Task]', data);
+                if (serviceInstance) {
+                    console.log('📢 Calling motion change callbacks, count:', serviceInstance.motionChangeCallbacks.size);
+                    serviceInstance.motionChangeCallbacks.forEach((callback) => {
+                        try {
+                            callback(data);
+                        } catch (err) {
+                            console.error('❌ Motion callback error:', err);
+                        }
+                    });
+                }
+            }
+        });
+
+        console.log('✅ TaskManager tasks defined at module load');
+    } catch (error) {
+        console.error('❌ Error defining TaskManager tasks:', error);
+    }
+};
+
 class ExpoGeolocationService {
-    private locationCallbacks: Set<LocationCallback> = new Set();
-    private motionChangeCallbacks: Set<MotionChangeCallback> = new Set();
-    private activityChangeCallbacks: Set<ActivityChangeCallback> = new Set();
-    private providerChangeCallbacks: Set<ProviderChangeCallback> = new Set();
-    private headlessTaskHandler: HeadlessTaskHandler | null = null;
+    public locationCallbacks: Set<LocationCallback> = new Set();
+    public motionChangeCallbacks: Set<MotionChangeCallback> = new Set();
+    public activityChangeCallbacks: Set<ActivityChangeCallback> = new Set();
+    public providerChangeCallbacks: Set<ProviderChangeCallback> = new Set();
+    public headlessTaskHandler: HeadlessTaskHandler | null = null;
     private isInitialized = false;
+    private foregroundWatcherUnsubscribe: Location.LocationSubscription | null = null;
+    private backgroundTaskStatus = {
+        lastUpdate: null as Date | null,
+        updateCount: 0,
+        isTracking: false,
+    };
+
+    constructor() {
+        // Set the global service instance so TaskManager tasks can access it
+        serviceInstance = this;
+    }
 
     /**
      * Convert expo accuracy to our accuracy format
@@ -62,63 +176,11 @@ class ExpoGeolocationService {
     }
 
     /**
-     * Register background task for location updates
-     */
-    private async registerLocationTask(): Promise<void> {
-        TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
-            if (error) {
-                console.error('Location task error:', error);
-                return;
-            }
-
-            if (data) {
-                const { locations } = data as any;
-                if (locations && locations.length > 0) {
-                    const location = locations[0];
-                    console.log('[Location Update]', location);
-
-                    // Call registered callbacks
-                    this.locationCallbacks.forEach((callback) => {
-                        callback(location);
-                    });
-
-                    // Call headless task handler if registered
-                    if (this.headlessTaskHandler) {
-                        await this.headlessTaskHandler({
-                            name: 'location',
-                            params: location,
-                        });
-                    }
-                }
-            }
-        });
-    }
-
-    /**
-     * Register motion change task
-     */
-    private async registerMotionChangeTask(): Promise<void> {
-        TaskManager.defineTask(MOTION_CHANGE_TASK_NAME, async ({ data, error }) => {
-            if (error) {
-                console.error('Motion change task error:', error);
-                return;
-            }
-
-            if (data) {
-                console.log('[Motion Change]', data);
-                this.motionChangeCallbacks.forEach((callback) => {
-                    callback(data);
-                });
-            }
-        });
-    }
-
-    /**
      * Initialize the geolocation service with configuration
      */
     async initialize(config: GeolocationConfig = {}): Promise<void> {
         if (this.isInitialized) {
-            console.log('Expo geolocation service already initialized');
+            console.log('ℹ️ Expo geolocation service already initialized');
             return;
         }
 
@@ -131,40 +193,92 @@ class ExpoGeolocationService {
         } = config;
 
         try {
+            console.log('🚀 Starting Expo geolocation initialization...');
+
             // Request permissions
+            console.log('📍 Requesting foreground location permission...');
             const { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
-                console.warn('Location permission not granted');
+                console.error('❌ Location permission NOT granted:', status);
                 return;
             }
+            console.log('✅ Foreground permission granted');
 
             // Request background permission
+            console.log('📍 Requesting background location permission...');
             const backgroundStatus = await Location.requestBackgroundPermissionsAsync();
+            console.log('Background permission result:', backgroundStatus);
+
             if (backgroundStatus.status !== 'granted') {
-                console.warn('Background location permission not granted');
+                console.error('❌ ❌ ❌ CRITICAL: Background location permission DENIED ❌ ❌ ❌');
+                console.error('Permission status:', backgroundStatus.status);
+                console.error('Permissions object:', JSON.stringify(backgroundStatus, null, 2));
+                console.error('\n🚨 IMPORTANT NOTICE:');
+                console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.error('Background location permission is REQUIRED for TaskManager tasks to work!');
+                console.error('Tasks will NOT trigger when the app is backgrounded.');
+                console.error('\nHow to fix (Android):');
+                console.error('1. Open Settings');
+                console.error('2. Go to Apps > SOS App > Permissions > Location');
+                console.error('3. Select "Allow all the time" (NOT "Allow only while using the app")');
+                console.error('\nHow to fix (iOS):');
+                console.error('1. Open Settings > SOS App > Location');
+                console.error('2. Select "Always" (NOT "While Using")');
+                console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+                throw new Error('Background location permission required but was denied');
+            } else {
+                console.log('✅ Background permission granted - TaskManager tasks will work!');
             }
 
-            // Register background tasks
-            await this.registerLocationTask();
-            await this.registerMotionChangeTask();
+            // Check if already tracking
+            console.log('🔍 Checking if already tracking...');
+            const isTracking = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+            console.log('📊 Already tracking:', isTracking);
+
+            if (isTracking) {
+                console.log('🛑 Stopping existing location tracking...');
+                await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
+                console.log('✅ Stopped existing tracking');
+            }
 
             // Start background location tracking
+            console.log('▶️ Starting new location tracking with config:', {
+                accuracy: 'High',
+                timeInterval: 10000,
+            });
             await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-                accuracy: this.getExpoAccuracy(desiredAccuracy),
-                distanceInterval: distanceFilter || 0,
-                timeInterval: locationUpdateInterval || 1000,
-                showsBackgroundLocationIndicator: true,
+                accuracy: Location.Accuracy.High,
+                timeInterval: 10000,      // Android (ms)
+                showsBackgroundLocationIndicator: true, // iOS
+                foregroundService: {
+                    notificationTitle: 'Tracking location',
+                    notificationBody: 'Location tracking is active',
+                },
             });
 
-            console.log('Expo geolocation service initialized');
+            console.log('✅ Expo geolocation service initialized successfully');
             this.isInitialized = true;
+
+            // Start foreground location watching for real-time updates
+            console.log('👀 Starting foreground location watcher...');
+            await this.startForegroundLocationWatcher();
+
+            // Force moving state
+            console.log('🏃 Setting pace to moving...');
+            await this.changePace(true);
 
             // Simulate motion change (always moving for this POC)
             this.motionChangeCallbacks.forEach((callback) => {
-                callback({ isMoving: true });
+                try {
+                    callback({ isMoving: true });
+                } catch (err) {
+                    console.error('❌ Motion callback error:', err);
+                }
             });
+
+            console.log('✅ Initialization complete. Tracking active in foreground and background!');
         } catch (error) {
-            console.error('Failed to initialize expo geolocation service:', error);
+            console.error('❌ Failed to initialize expo geolocation service:', error);
             throw error;
         }
     }
@@ -174,17 +288,28 @@ class ExpoGeolocationService {
      */
     async start(): Promise<void> {
         try {
+            console.log('▶️ Attempting to start location tracking...');
             const isTracking = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
-            if (!isTracking) {
-                await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-                    accuracy: Location.Accuracy.High,
-                    distanceInterval: 0,
-                    timeInterval: 1000,
-                });
+            console.log('📊 Already tracking:', isTracking);
+
+            if (isTracking) {
+                console.log('ℹ️ Already tracking, skipping start');
+                return;
             }
-            console.log('Expo location tracking started');
+
+            console.log('⏳ Starting location updates...');
+            await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+                accuracy: Location.Accuracy.High,
+                timeInterval: 10000,      // Android (ms)
+                showsBackgroundLocationIndicator: true, // iOS
+                foregroundService: {
+                    notificationTitle: 'Tracking location',
+                    notificationBody: 'Location tracking is active',
+                },
+            });
+            console.log('✅ Location tracking started successfully');
         } catch (error) {
-            console.error('Failed to start expo location tracking:', error);
+            console.error('❌ Failed to start location tracking:', error);
             throw error;
         }
     }
@@ -194,14 +319,66 @@ class ExpoGeolocationService {
      */
     async stop(): Promise<void> {
         try {
+            // Stop foreground watcher
+            if (this.foregroundWatcherUnsubscribe) {
+                this.foregroundWatcherUnsubscribe?.remove();
+                this.foregroundWatcherUnsubscribe = null;
+                console.log('✅ Foreground watcher stopped');
+            }
+
+            // Stop background tracking
             const isTracking = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
             if (isTracking) {
                 await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
             }
-            console.log('Expo location tracking stopped');
+            console.log('✅ Expo location tracking stopped');
         } catch (error) {
-            console.error('Failed to stop expo location tracking:', error);
+            console.error('❌ Failed to stop location tracking:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Start foreground location watcher for real-time updates while app is in foreground
+     */
+    private async startForegroundLocationWatcher(): Promise<void> {
+        try {
+            console.log('👀 Starting foreground location watcher...');
+
+            // Stop existing watcher if any
+            if (this.foregroundWatcherUnsubscribe) {
+                this.foregroundWatcherUnsubscribe?.remove();
+            }
+
+            // Watch location with high accuracy while app is in foreground
+            this.foregroundWatcherUnsubscribe = await Location.watchPositionAsync(
+                {
+                    accuracy: Location.Accuracy.High,
+                    timeInterval: 1000,  // 5 seconds
+                    distanceInterval: 0, // 10 meters
+                },
+                (location) => {
+                    console.log('👁️ [FOREGROUND Location Update]', {
+                        latitude: location.coords?.latitude,
+                        longitude: location.coords?.longitude,
+                        accuracy: location.coords?.accuracy,
+                        timestamp: location.timestamp ?? Date.now(),
+                    });
+
+                    // Call location callbacks
+                    this.locationCallbacks.forEach((callback) => {
+                        try {
+                            callback(location);
+                        } catch (err) {
+                            console.error('❌ Foreground callback error:', err);
+                        }
+                    });
+                }
+            );
+
+            console.log('✅ Foreground location watcher started successfully');
+        } catch (error) {
+            console.error('❌ Failed to start foreground location watcher:', error);
         }
     }
 
@@ -228,6 +405,12 @@ class ExpoGeolocationService {
         this.locationCallbacks.add(callback);
         return () => {
             this.locationCallbacks.delete(callback);
+            // Stop foreground watcher
+            if (this.foregroundWatcherUnsubscribe) {
+                this.foregroundWatcherUnsubscribe?.remove();
+                this.foregroundWatcherUnsubscribe = null;
+                console.log('✅ Foreground watcher stopped');
+            }
         };
     }
 
@@ -288,6 +471,82 @@ class ExpoGeolocationService {
     }
 
     /**
+     * Get background task status
+     */
+    getBackgroundTaskStatus(): {
+        lastUpdate: Date | null;
+        updateCount: number;
+        isTracking: boolean;
+    } {
+        return {
+            lastUpdate: this.backgroundTaskStatus.lastUpdate,
+            updateCount: this.backgroundTaskStatus.updateCount,
+            isTracking: this.backgroundTaskStatus.isTracking,
+        };
+    }
+
+    /**
+     * Get formatted background task status as string
+     */
+    getBackgroundTaskStatusString(): string {
+        return `Background Updates: ${this.backgroundTaskStatus.updateCount} | Last: ${this.backgroundTaskStatus.lastUpdate
+            ? this.backgroundTaskStatus.lastUpdate.toLocaleTimeString()
+            : 'Never'
+            } | Tracking: ${this.backgroundTaskStatus.isTracking ? '✅' : '❌'}`;
+    }
+
+    /**
+     * Diagnostic method to check task status and permissions
+     */
+    async diagnoseTaskStatus(): Promise<void> {
+        try {
+            console.log('\n📋 === DIAGNOSTIC REPORT ===\n');
+
+            // Check if task is running
+            const isTracking = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+            console.log(`🎯 Task "${LOCATION_TASK_NAME}" is running:`, isTracking);
+
+            // Check permissions
+            const fgPerm = await Location.getForegroundPermissionsAsync();
+            console.log('📍 Foreground permission status:', fgPerm.status, fgPerm.granted);
+
+            const bgPerm = await Location.getBackgroundPermissionsAsync();
+            console.log('📍 Background permission status:', bgPerm.status, bgPerm.granted);
+
+            // Get last known location
+            const lastLocation = await Location.getLastKnownPositionAsync();
+            console.log('📍 Last known location:', lastLocation ? {
+                lat: lastLocation.coords?.latitude,
+                lon: lastLocation.coords?.longitude,
+                timestamp: new Date(lastLocation.timestamp || 0).toISOString(),
+            } : 'NULL');
+
+            // Check registered callbacks
+            console.log('📢 Registered callbacks:');
+            console.log('   - Location callbacks:', this.locationCallbacks.size);
+            console.log('   - Motion change callbacks:', this.motionChangeCallbacks.size);
+            console.log('   - Headless handler:', this.headlessTaskHandler ? 'YES' : 'NO');
+
+            // Background task status
+            console.log('\n📊 BACKGROUND TASK STATUS:');
+            console.log('   - Updates received:', this.backgroundTaskStatus.updateCount);
+            console.log('   - Last update:', this.backgroundTaskStatus.lastUpdate ? new Date(this.backgroundTaskStatus.lastUpdate).toISOString() : 'NEVER');
+            console.log('   - Is tracking:', this.backgroundTaskStatus.isTracking);
+
+            // Foreground status
+            console.log('\n👀 FOREGROUND STATUS:');
+            console.log('   - Watcher active:', this.foregroundWatcherUnsubscribe ? 'YES' : 'NO');
+
+            console.log('\n⚠️  IMPORTANT NOTES:');
+            console.log('✅ Foreground: Updates should happen every 5 seconds while app is active');
+            console.log('✅ Background: Updates only trigger when app is backgrounded (tap home button)');
+            console.log('💡 To test background: Background the app and move around, then reopen');
+            console.log('💡 Check "Background Updates received" counter to verify background task is working\n');
+
+        } catch (error) {
+            console.error('❌ Diagnostic error:', error);
+        }
+    }    /**
      * Reset the service
      */
     async reset(): Promise<void> {
@@ -304,10 +563,17 @@ class ExpoGeolocationService {
             // Clear headless task handler
             this.headlessTaskHandler = null;
 
+            // Reset background task status
+            this.backgroundTaskStatus = {
+                lastUpdate: null,
+                updateCount: 0,
+                isTracking: false,
+            };
+
             this.isInitialized = false;
-            console.log('Expo geolocation service reset');
+            console.log('✅ Expo geolocation service reset');
         } catch (error) {
-            console.error('Failed to reset expo geolocation service:', error);
+            console.error('❌ Failed to reset expo geolocation service:', error);
             throw error;
         }
     }
@@ -316,17 +582,26 @@ class ExpoGeolocationService {
      * Cleanup and remove all listeners
      */
     destroy(): void {
+        // Stop foreground watcher
+        if (this.foregroundWatcherUnsubscribe) {
+            this.foregroundWatcherUnsubscribe?.remove();
+            this.foregroundWatcherUnsubscribe = null;
+        }
+
         this.locationCallbacks.clear();
         this.motionChangeCallbacks.clear();
         this.activityChangeCallbacks.clear();
         this.providerChangeCallbacks.clear();
         this.headlessTaskHandler = null;
         this.isInitialized = false;
-        console.log('Expo geolocation service destroyed');
+        console.log('✅ Expo geolocation service destroyed');
     }
 }
 
 export const expoGeolocationService = new ExpoGeolocationService();
+
+// Initialize TaskManager tasks at module load time (CRITICAL for Expo)
+initializeModuleTasks();
 
 export type { ActivityChangeCallback, GeolocationConfig, HeadlessTaskEvent, HeadlessTaskHandler, LocationCallback, MotionChangeCallback, ProviderChangeCallback };
 

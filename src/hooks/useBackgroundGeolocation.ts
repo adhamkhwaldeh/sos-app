@@ -22,6 +22,9 @@ export const useBackgroundGeolocation = () => {
                     allowIdenticalLocations: true,
                 });
 
+                // Log background task status
+                console.log('📊', geolocationService.getBackgroundTaskStatusString());
+
                 // Subscribe to location updates
                 unsubscribeLocation = geolocationService.onLocation((location) => {
                     console.log('[onLocation]', location);
