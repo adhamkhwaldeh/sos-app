@@ -1,7 +1,7 @@
 import { DB_EVENTS, dbEventEmitter } from '@/src/eventBus/eventEmitter';
+import { clearAllLogs } from '@/src/helpers/locationLogger';
 import { LocalizationContext } from '@/src/localization/LocalizationContext';
 import { useLocationStore } from '@/src/store/useLocationStore';
-import { clearAllLogs } from '@/src/utils/locationLogger';
 import { useContext, useEffect } from 'react';
 import { AppState, FlatList, StyleSheet, View } from 'react-native';
 import { Appbar, Text } from 'react-native-paper';

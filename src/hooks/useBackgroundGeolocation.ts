@@ -1,6 +1,6 @@
 // import { geolocationService } from '@/src/services/geolocationService';
+import { appendLocationLog } from '@/src/helpers/locationLogger';
 import { expoGeolocationService as geolocationService } from '@/src/services/expoGeolocationService';
-import { appendLocationLog } from '@/src/utils/locationLogger';
 import { useEffect } from 'react';
 
 export const useBackgroundGeolocation = () => {

@@ -1,10 +1,11 @@
-import { ThemeMode, useTheme } from '@/src/context/ThemeContext';
+// import { ThemeMode, useTheme } from '@/src/context/ThemeContext';
 import DimensHelper from '@/src/helpers/DimensHelper';
 import { LocalizationContext } from '@/src/localization/LocalizationContext';
 import { Fonts } from '@/src/styles/theme';
 import { useContext, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Appbar, Button, Divider, List, Menu, Switch, Text, useTheme as usePaperTheme } from 'react-native-paper';
+import { Appbar, List, Switch, Text, useTheme } from 'react-native-paper';
+import { Dropdown } from 'react-native-paper-dropdown';
 
 export default function SettingsScreen() {
 
@@ -13,16 +14,16 @@ export default function SettingsScreen() {
         await setAppLanguage(language);
     };
 
-    const { themeMode, setThemeMode, theme } = useTheme();
-    const paperTheme = usePaperTheme();
+    const theme = useTheme();
 
-    const [menuVisible, setMenuVisible] = useState(false);
-    const openMenu = () => setMenuVisible(true);
-    const closeMenu = () => setMenuVisible(false);
+    const [selectedLanguage, setSelectedLanguage] = useState(translations.getLanguage());
 
-    const handleThemeChange = (mode: ThemeMode) => {
-        setThemeMode(mode);
-    };
+
+    const languageOptions = [
+        { label: 'English', value: 'en' },
+        { label: 'العربية', value: 'ar' },
+        { label: 'Deutsch', value: 'de' },
+    ];
 
     return (
         <View style={{ flex: 1 }}>
@@ -40,14 +41,18 @@ export default function SettingsScreen() {
                         left={props => <List.Icon {...props} icon="brightness-6" />}
                         right={() => (
                             <Switch
-                                value={theme === 'dark'}
-                                onValueChange={(value) => handleThemeChange(value ? 'dark' : 'light')}
+                                value={theme.dark}
+                                onValueChange={(value) => {
+                                    theme.dark = value;
+
+                                    // handleThemeChange(value ? 'dark' : 'light');
+                                }}
                                 color="rgba(0, 210, 238, 1)"
                             />
                         )}
                     />
 
-                    <Divider />
+                    {/* <Divider />
 
                     <List.Item
                         title={translations.followSystem}
@@ -60,30 +65,25 @@ export default function SettingsScreen() {
                                 color="rgba(0, 210, 238, 1)"
                             />
                         )}
-                    />
+                    /> */}
+
                 </List.Section>
                 <View>
                     <Text style={{ margin: DimensHelper.marginMd }}>
                         {translations.profileDetails}
                     </Text>
 
-                    {/* style={styles.normalButtonMargin} */}
-                    <Menu
-                        visible={menuVisible}
-                        onDismiss={closeMenu}
-                        anchor={
-                            <Button
-                                mode="contained"
-                                onPress={openMenu}
-                                style={{ marginHorizontal: DimensHelper.marginMd }}
-                            >
-                                {translations.changeLanguage} ({translations.getLanguage().toUpperCase()})
-                            </Button>
-                        }>
-                        <Menu.Item onPress={() => { handleSetLanguage('en'); closeMenu(); }} title="English" />
-                        <Menu.Item onPress={() => { handleSetLanguage('ar'); closeMenu(); }} title="العربية" />
-                        <Menu.Item onPress={() => { handleSetLanguage('de'); closeMenu(); }} title="Deutsch" />
-                    </Menu>
+                    <Dropdown
+                        label={translations.changeLanguage}
+
+                        options={languageOptions}
+                        value={selectedLanguage}
+                        onSelect={(value: any) => {
+                            setSelectedLanguage(value);
+                            handleSetLanguage(value);
+                        }}
+                        mode="outlined"
+                    />
 
                 </View>
 

@@ -3,15 +3,14 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
-import '@/HeadlessTask';
 import { useBackgroundGeolocation } from '@/src/hooks/useBackgroundGeolocation';
+import '@/src/services/tasks/HeadlessTask';
 
 // import { ThemeProvider, useTheme } from '@/src/context/ThemeContext';
-import { ThemeProvider } from '@/src/context/ThemeContext';
+import { StatusBarContext, StatusBarProvider } from '@/src/context/StatusBarContext';
 import { migrationPromise, runMigrations } from '@/src/db/client';
 import { LocalizationProvider } from '@/src/localization/LocalizationContext';
 import { notificationService, saveNotification } from '@/src/services/notificationService';
-import { StatusBarContext, StatusBarProvider } from '@/src/status_bar/StatusBarContext';
 import { getMessaging, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
 import { useContext, useEffect } from 'react';
 import { MD3DarkTheme, MD3LightTheme, PaperProvider, useTheme } from 'react-native-paper';
@@ -80,13 +79,11 @@ export default function RootLayout() {
     <StatusBarProvider>
       {/* <Provider store={Store}> */}
       {/* theme={currentTheme.dark ? darkTheme : theme} */}
-      <ThemeProvider>
         <PaperProvider theme={paperTheme} >
           <LocalizationProvider>
             <RootLayoutContent />
           </LocalizationProvider>
         </PaperProvider>
-      </ThemeProvider>
       {/* </Provider> */}
     </StatusBarProvider>
 

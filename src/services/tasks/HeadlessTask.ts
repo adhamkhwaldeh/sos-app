@@ -1,6 +1,8 @@
-import { geolocationService } from '@/src/services/geolocationService';
-import { appendLocationLog } from '@/src/utils/locationLogger';
-import { runMigrations } from './src/db/client';
+// import { geolocationService } from '@/src/services/geolocationService';
+import { expoGeolocationService as geolocationService } from '@/src/services/expoGeolocationService';
+
+import { appendLocationLog } from '@/src/helpers/locationLogger';
+import { runMigrations } from '../../db/client';
 
 const HeadlessTask = async (event: any) => {
     console.log('[HeadlessTask] - Starting migrations...');

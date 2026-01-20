@@ -57,7 +57,7 @@ class GeolocationService {
             High: BackgroundGeolocation.DesiredAccuracy.High,
             Medium: BackgroundGeolocation.DesiredAccuracy.Medium,
             Low: BackgroundGeolocation.DesiredAccuracy.Low,
-            PowerSaving: BackgroundGeolocation.DesiredAccuracy.PowerSaving,
+            PowerSaving: BackgroundGeolocation.DesiredAccuracy.Lowest,
         };
 
         try {
