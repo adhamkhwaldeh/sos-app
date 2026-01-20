@@ -2,68 +2,28 @@
 
 An emergency response mobile application built with **Expo** and **React Native**, designed to help users quickly send and respond to SOS alerts with real-time location tracking.
 
-## 📱 Features
+## 📱 About the Project
 
-- **Cross-Platform Support** - Runs on iOS, Android, and Web
-- **Background Geolocation** - Continuous location tracking even when app is in background
-- **Dark/Light Mode** - Automatic theme switching based on system preferences
-- **Tab Navigation** - Intuitive bottom tab navigation with haptic feedback
-- **Parallax Scrolling** - Smooth parallax effects for enhanced user experience
-- **Modal Support** - Native modal presentations for additional screens
-- **File-Based Routing** - Modern routing using Expo Router
+The SOS App is a cross-platform mobile application that enables emergency responders to:
+- Receive and respond to SOS alerts in real-time
+- Track their location continuously in the background
+- View and manage notifications
+- Switch between different tracking modes
+- Support multiple languages (English, Arabic, Deutsch)
+- Seamlessly switch between dark and light themes
 
-## 🛠️ Tech Stack
+This application combines Expo's powerful development framework with React Native to deliver a fast, reliable emergency response solution across iOS, Android, and web platforms.
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Expo | ~54.0.31 | Development framework |
-| React Native | 0.81.5 | Cross-platform mobile development |
-| React | 19.1.0 | UI library |
-| Expo Router | ~6.0.21 | File-based navigation |
-| React Navigation | 7.x | Navigation infrastructure |
-| React Native Reanimated | ~4.1.1 | Animations |
-| Background Geolocation | ^5.0.0 | Location tracking |
-| TypeScript | ~5.9.2 | Type safety |
-
-## 📂 Project Structure
-
-```
-sos-app/
-├── app/                    # Application screens (file-based routing)
-│   ├── (tabs)/            # Tab navigation screens
-│   │   ├── _layout.tsx    # Tab navigator configuration
-│   │   ├── index.tsx      # Home screen
-│   │   └── explore.tsx    # Explore screen
-│   ├── _layout.tsx        # Root layout with theme provider
-│   └── modal.tsx          # Modal screen
-├── assets/                 # Static assets (images, fonts)
-├── components/            # Reusable UI components
-│   ├── ui/               # Core UI components (Collapsible, IconSymbol)
-│   ├── external-link.tsx # External link component
-│   ├── haptic-tab.tsx    # Tab with haptic feedback
-│   ├── hello-wave.tsx    # Animated wave component
-│   ├── parallax-scroll-view.tsx # Parallax scroll container
-│   ├── themed-text.tsx   # Theme-aware text component
-│   └── themed-view.tsx   # Theme-aware view component
-├── constants/             # App constants
-│   └── theme.ts          # Colors and fonts configuration
-├── hooks/                 # Custom React hooks
-│   ├── use-color-scheme.ts     # Color scheme detection
-│   └── use-theme-color.ts      # Theme color utilities
-└── scripts/               # Utility scripts
-```
-
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn
+- Expo CLI: `npm install -g expo-cli`
+- Android emulator or physical device for Android testing
+- iOS Xcode for iOS development (Mac only)
 
-- [Node.js](https://nodejs.org/) (LTS version recommended)
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-- [Expo CLI](https://docs.expo.dev/get-started/installation/)
-- For iOS: macOS with Xcode installed
-- For Android: Android Studio with an emulator or physical device
-
-### Installation
+### Installation & Running
 
 1. **Clone the repository**
    ```bash
@@ -78,72 +38,118 @@ sos-app/
 
 3. **Start the development server**
    ```bash
-   npx expo start
+   npm start
    ```
 
-### Running the App
+4. **Run on specific platform**
+   - **Android**: `npm run android`
+   - **iOS**: `npm run ios`
+   - **Web**: `npm run web`
 
-After starting the development server, you can run the app on:
+### Alternative: Using Expo Go
 
-- **iOS Simulator** (macOS only)
-  ```bash
-  npm run ios
-  ```
+After running `npm start`, you can:
+- Scan the QR code with Expo Go app (iOS/Android)
+- View the app on your physical device instantly
 
-- **Android Emulator**
-  ```bash
-  npm run android
-  ```
+## 📱 Features
 
-- **Web Browser**
-  ```bash
-  npm run web
-  ```
+- **Cross-Platform Support** - Runs on iOS, Android, and Web
+- **Background Geolocation** - Continuous location tracking even when app is in background
+- **Dark/Light Mode** - Automatic theme switching based on system preferences
+- **Tab Navigation** - Intuitive bottom tab navigation with haptic feedback
+- **Parallax Scrolling** - Smooth parallax effects for enhanced user experience
+- **Modal Support** - Native modal presentations for additional screens
+- **File-Based Routing** - Modern routing using Expo Router
+- **Multi-Language Support** - English, Arabic, and German localization
+- **Real-Time Notifications** - Event-driven updates using EventEmitter3
+- **Local Storage** - SQLite database with Drizzle ORM
 
-- **Physical Device**: Scan the QR code with [Expo Go](https://expo.dev/go)
+## 🛠️ Tech Stack
 
-## 📜 Available Scripts
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Expo | ~54.0.31 | Development framework |
+| React Native | 0.81.5 | Cross-platform mobile development |
+| React | 19.1.0 | UI library |
+| Expo Router | ~6.0.21 | File-based navigation |
+| React Navigation | 7.x | Navigation infrastructure |
+| React Native Paper | 5.14.5 | Material Design UI components |
+| React Native Reanimated | ~4.1.1 | Animations |
+| Background Geolocation | ^5.0.0 | Location tracking |
+| EventEmitter3 | Latest | Event management |
+| Drizzle ORM | ^0.45.1 | Database ORM |
+| Zustand | Latest | State management |
+| TypeScript | ~5.9.2 | Type safety |
 
-| Script | Description |
-|--------|-------------|
-| `npm start` | Start the Expo development server |
-| `npm run android` | Start on Android emulator/device |
-| `npm run ios` | Start on iOS simulator/device |
-| `npm run web` | Start in web browser |
-| `npm run lint` | Run ESLint for code quality |
-| `npm run reset-project` | Reset to a fresh project structure |
+## 📂 Project Structure
 
-## 🎨 Theming
+```
+sos-app/
+├── app/                    # Application screens (file-based routing)
+│   ├── (tabs)/            # Tab navigation screens
+│   │   ├── _layout.tsx    # Tab navigator configuration
+│   │   ├── index.tsx      # Home/Logs screen
+│   │   ├── notifications.tsx # Notifications screen
+│   │   └── settings.tsx   # Settings screen
+│   ├── _layout.tsx        # Root layout with theme provider
+│   └── modal.tsx          # Modal screen
+├── assets/                 # Static assets (images, fonts)
+├── src/
+│   ├── components/        # Reusable UI components
+│   ├── context/          # React Context (Theme, Localization)
+│   ├── data/             # Data models and entities
+│   ├── db/               # Database configuration and schema
+│   ├── eventBus/         # Event emitter instance
+│   ├── helpers/          # Utility functions
+│   ├── hooks/            # Custom React hooks
+│   ├── localization/     # Multi-language support
+│   ├── services/         # Business logic and API services
+│   ├── store/            # Zustand store definitions
+│   └── styles/           # Theme and styling
+├── drizzle/              # Database migrations
+├── android/              # Android native code
+├── package.json          # Dependencies and scripts
+├── tsconfig.json         # TypeScript configuration
+└── app.json              # Expo configuration
+```
 
-The app supports both **light** and **dark** modes with automatic detection based on system preferences.
+## 🔧 Available Scripts
 
-### Color Palette
+- `npm start` - Start the Expo development server
+- `npm run android` - Run app on Android emulator/device
+- `npm run ios` - Run app on iOS simulator
+- `npm run web` - Run app in web browser
+- `npm run lint` - Run ESLint
+- `npm run reset-project` - Reset project to initial state
 
-| Theme | Background | Text | Tint |
-|-------|------------|------|------|
-| Light | `#ffffff` | `#11181C` | `#0a7ea4` |
-| Dark | `#151718` | `#ECEDEE` | `#ffffff` |
+## 📚 Documentation
 
-### Font Families
+For detailed technical documentation, see:
+- `README_App_technical.md` - Technical architecture and implementation details
+- `README_App_business.md` - Business features and requirements
+- `GEOLOCATION_IMPLEMENTATION_GUIDE.md` - Location tracking setup guide
 
-The app uses platform-specific system fonts for optimal native appearance:
+## 🐛 Troubleshooting
 
-- **Sans**: System default
-- **Serif**: UI Serif
-- **Rounded**: SF Pro Rounded (iOS) / System default (Android)
-- **Mono**: System monospace
+### Build issues on Android
+- Clear cache: `npm run reset-project`
+- Rebuild: `npm run android`
 
-## 🔧 Configuration
+### Port conflicts
+- Change port in `npm start -- --port 8081`
 
-### App Configuration (`app.json`)
+### Dependency issues
+- Remove node_modules and reinstall: `rm -r node_modules && npm install`
 
-| Setting | Value |
-|---------|-------|
-| App Name | `sos-app` |
-| Version | `1.0.0` |
-| Orientation | Portrait |
-| URL Scheme | `sosapp` |
-| New Architecture | Enabled |
+## 📄 License
+
+This project is proprietary. All rights reserved.
+
+## 👤 Author
+
+**Adham Khwaldeh**
+- GitHub: [@adhamkhwaldeh](https://github.com/adhamkhwaldeh)
 | Typed Routes | Enabled |
 | React Compiler | Enabled |
 
