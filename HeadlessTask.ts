@@ -1,6 +1,6 @@
+import { appendLocationLog } from '@/src/utils/locationLogger';
 import BackgroundGeolocation from 'react-native-background-geolocation';
-import { runMigrations } from './db/client';
-import { appendLocationLog } from './utils/locationLogger';
+import { runMigrations } from './src/db/client';
 
 const HeadlessTask = async (event: any) => {
     console.log('[HeadlessTask] - Starting migrations...');

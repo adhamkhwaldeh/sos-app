@@ -1,7 +1,7 @@
-import { db } from '@/db/client';
-import { notifications } from '@/db/schema';
-import { DB_EVENTS, dbEventEmitter } from '@/utils/eventEmitter';
-import { clearAllNotifications, showLocalNotification } from '@/utils/notificationService';
+import { db } from '@/src/db/client';
+import { notifications } from '@/src/db/schema';
+import { DB_EVENTS, dbEventEmitter } from '@/src/utils/eventEmitter';
+import { clearAllNotifications, showLocalNotification } from '@/src/utils/notificationService';
 import { desc } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import * as Notifications from 'expo-notifications';
@@ -9,9 +9,9 @@ import { useEffect, useState } from 'react';
 import { AppState, FlatList, StyleSheet, View } from 'react-native';
 import { Appbar } from 'react-native-paper';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Fonts } from '@/constants/theme';
+import { ThemedText } from '@/src/components/themed-text';
+import { ThemedView } from '@/src/components/themed-view';
+import { Fonts } from '@/src/styles/theme';
 
 export default function TabTwoScreen() {
   const [refreshKey, setRefreshKey] = useState(0);

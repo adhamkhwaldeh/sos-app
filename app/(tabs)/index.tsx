@@ -1,12 +1,12 @@
 import { StyleSheet } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { ThemedText } from '@/src/components/themed-text';
+import { ThemedView } from '@/src/components/themed-view';
 
-import { db } from '@/db/client';
-import { locations } from '@/db/schema';
-import { DB_EVENTS, dbEventEmitter } from '@/utils/eventEmitter';
-import { clearAllLogs } from '@/utils/locationLogger';
+import { db } from '@/src/db/client';
+import { locations } from '@/src/db/schema';
+import { DB_EVENTS, dbEventEmitter } from '@/src/utils/eventEmitter';
+import { clearAllLogs } from '@/src/utils/locationLogger';
 import { desc } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useEffect, useState } from 'react';

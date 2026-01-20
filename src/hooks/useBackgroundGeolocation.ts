@@ -4,7 +4,7 @@ import BackgroundGeolocation, {
     Subscription,
 } from 'react-native-background-geolocation';
 
-import { appendLocationLog } from '@/utils/locationLogger';
+import { appendLocationLog } from '@/src/utils/locationLogger';
 
 export const useBackgroundGeolocation = () => {
     useEffect(() => {

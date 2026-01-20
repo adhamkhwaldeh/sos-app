@@ -1,6 +1,6 @@
-import { db } from '@/db/client';
-import { notifications } from '@/db/schema';
-import { DB_EVENTS, dbEventEmitter } from '@/utils/eventEmitter';
+import { db } from '@/src/db/client';
+import { notifications } from '@/src/db/schema';
+import { DB_EVENTS, dbEventEmitter } from '@/src/utils/eventEmitter';
 import messaging from '@react-native-firebase/messaging';
 import * as Notifications from 'expo-notifications';
 import { PermissionsAndroid, Platform } from 'react-native';
@@ -54,12 +54,13 @@ export const showLocalNotification = async (title: string, body: string, data?: 
             content: {
                 title,
                 body,
-                data: data || {},
-                sound: true,
-                priority: Notifications.AndroidNotificationPriority.MAX,
+                // data: data || {},
+                // sound: true,
+                // priority: Notifications.AndroidNotificationPriority.HIGH,
                 // channelId: 'default',
             },
             trigger: null, // show immediately
+            // identifier: "adsads",
         });
         console.log('[showLocalNotification] Scheduled successfully, ID:', identifier);
         return identifier;

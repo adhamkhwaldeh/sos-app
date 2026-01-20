@@ -1,17 +1,20 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import '@/HeadlessTask';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useBackgroundGeolocation } from '@/hooks/useBackgroundGeolocation';
+import { useBackgroundGeolocation } from '@/src/hooks/useBackgroundGeolocation';
 
-import { migrationPromise, runMigrations } from '@/db/client';
-import { notificationService, saveNotification } from '@/utils/notificationService';
+// import { ThemeProvider, useTheme } from '@/src/context/ThemeContext';
+import { ThemeProvider } from '@/src/context/ThemeContext';
+import { migrationPromise, runMigrations } from '@/src/db/client';
+import { LocalizationProvider } from '@/src/localization/LocalizationContext';
+import { StatusBarContext, StatusBarProvider } from '@/src/status_bar/StatusBarContext';
+import { notificationService, saveNotification } from '@/src/utils/notificationService';
 import messaging from '@react-native-firebase/messaging';
-import { useEffect } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useContext, useEffect } from 'react';
+import { MD3DarkTheme, MD3LightTheme, PaperProvider, useTheme } from 'react-native-paper';
 
 // Register background handler
 messaging().setBackgroundMessageHandler(async (remoteMessage) => {
@@ -19,8 +22,9 @@ messaging().setBackgroundMessageHandler(async (remoteMessage) => {
   await saveNotification(remoteMessage);
 });
 
+function RootLayoutContent() {
+  // const { theme } = useTheme();
 
-export default function RootLayout() {
   useEffect(() => {
     const init = async () => {
       await runMigrations();
@@ -28,14 +32,9 @@ export default function RootLayout() {
     init();
   }, []);
 
-  const colorScheme = useColorScheme();
   useEffect(() => {
     const setup = async () => {
       await migrationPromise;
-      // useBackgroundGeolocation is a hook, it should be called at the top level.
-      // However, if it internally starts tracking, we might need to ensure the DB is ready.
-      // Since it's a hook, we can't await it inside useEffect like this if it returns something used in render.
-      // But we can wrap the logic that uses the DB inside the hook or ensure the hook respects the promise.
     };
     setup();
   }, []);
@@ -46,15 +45,55 @@ export default function RootLayout() {
 
   useBackgroundGeolocation();
 
+  const theme = useTheme();
+
+  const navigationTheme = theme.dark ? DarkTheme : DefaultTheme;
+
+  const { setStatusBarAll } = useContext(StatusBarContext);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setStatusBarAll(theme.colors.primary, 'light-content', false);
+    }, 500);
+  }, []);
+
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        </Stack>
-        <StatusBar style="auto" />
+
+    <NavigationThemeProvider value={navigationTheme}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+      </Stack>
+      <StatusBar style={theme.dark ? 'light' : 'dark'} />
+    </NavigationThemeProvider>
+
+
+  );
+}
+
+export default function RootLayout() {
+  const theme = useTheme();
+  const paperTheme = theme.dark ? MD3DarkTheme : MD3LightTheme;
+
+  return (
+
+    <StatusBarProvider>
+      {/* <Provider store={Store}> */}
+      {/* theme={currentTheme.dark ? darkTheme : theme} */}
+      <ThemeProvider>
+        <PaperProvider theme={paperTheme} >
+          <LocalizationProvider>
+            <RootLayoutContent />
+          </LocalizationProvider>
+        </PaperProvider>
       </ThemeProvider>
-    </SafeAreaView>
+      {/* </Provider> */}
+    </StatusBarProvider>
+
+    // 
+    // <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+    //   <RootLayoutContent />
+    // </SafeAreaView>
+    // </ThemeProvider>
   );
 }
