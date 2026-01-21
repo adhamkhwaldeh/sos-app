@@ -7,15 +7,9 @@ import { Controller, useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 import { Button, Modal, Text, TextInput, useTheme } from "react-native-paper";
 
-
-
 export default function AddNotificationModal({
   visible,
   onClose,
-  // control,
-  // handleSubmit,
-  // errors,
-  // onSubmit,
 }: AddNotificationModalProps) {
   const { translations } = useContext(LocalizationContext);
   const theme = useTheme();
@@ -25,6 +19,7 @@ export default function AddNotificationModal({
     handleSubmit,
     reset,
     formState: { errors },
+    setValue,
   } = useForm<NotificationFormData>({
     defaultValues: {
       title: "",
@@ -33,19 +28,24 @@ export default function AddNotificationModal({
     },
   });
 
-  const onSubmit = async (data: NotificationFormData) => {
-    await addManualNotification(data.title, data.message, data.status);
-    onClose();
+  const onSubmit = (data: NotificationFormData) => {
+    addManualNotification(data.title, data.message, data.status);
     reset();
+    onClose();
   };
 
   return (
     <Modal
       visible={visible}
       onDismiss={onClose}
-      style={{ backgroundColor: theme.colors.background }}
+      contentContainerStyle={styles.contentContainer}
     >
-      <View style={styles.modalContainer}>
+      <View
+        style={[
+          styles.modalContainer,
+          { backgroundColor: theme.colors.background },
+        ]}
+      >
         <Text style={styles.modalTitle}>{translations.addNotification}</Text>
 
         <Controller
@@ -127,10 +127,18 @@ export default function AddNotificationModal({
 }
 
 const styles = StyleSheet.create({
+  contentContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+  },
   modalContainer: {
     padding: 20,
     margin: 20,
     borderRadius: 8,
+    backgroundColor: "#fff",
+    width: "90%",
+    maxWidth: 400,
   },
   modalTitle: {
     fontSize: 20,
