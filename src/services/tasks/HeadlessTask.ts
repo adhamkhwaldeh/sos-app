@@ -1,5 +1,5 @@
-// import { geolocationService } from '@/src/services/geolocationService';
-import { expoGeolocationService as geolocationService } from '@/src/services/expoGeolocationService';
+import { geolocationService } from '@/src/services/geolocationService';
+// import { expoGeolocationService as geolocationService } from '@/src/services/expoGeolocationService';
 
 import { appendLocationLog } from '@/src/helpers/locationLogger';
 import { runMigrations } from '../../db/client';

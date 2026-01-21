@@ -1,13 +1,13 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState } from "react";
 // import i18n from 'i18n-js';
-import LoggingHelper from '@/src/helpers/LoggingHelper';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Updates from 'expo-updates';
-import { I18nManager } from 'react-native';
-import * as RNLocalize from 'react-native-localize';
-import translations, { DEFAULT_LANGUAGE } from './translations';
+import LoggingHelper from "@/src/helpers/LoggingHelper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Updates from "expo-updates";
+import { I18nManager } from "react-native";
+import * as RNLocalize from "react-native-localize";
+import translations, { DEFAULT_LANGUAGE } from "./translations";
 
-const APP_LANGUAGE = 'appLanguage';
+const APP_LANGUAGE = "appLanguage";
 
 export const LocalizationContext = createContext({
   translations,
@@ -18,15 +18,18 @@ export const LocalizationContext = createContext({
 
 export const LocalizationProvider: React.FC<any> = ({ children }) => {
   const [appLanguage, setAppLanguage] = useState(DEFAULT_LANGUAGE);
+  const [forceUpdate, setForceUpdate] = useState(0); // Force UI refresh
   // const [appRTL, setAppRTL] = useState(appLanguage == 'ar');
 
   const applyLanguage = (language: string) => {
     translations.setLanguage(language);
-    var isRTL = language == 'ar';
-    LoggingHelper.log('is RTL: ' + isRTL);
+    let isRTL = language == "ar";
+    LoggingHelper.log("is RTL: " + isRTL);
     I18nManager.forceRTL(isRTL);
     I18nManager.allowRTL(isRTL);
     setAppLanguage(language);
+    // Force UI refresh by triggering a state update
+    setForceUpdate((prev) => prev + 1);
   };
 
   const setLanguage = async (language: string) => {
@@ -36,9 +39,16 @@ export const LocalizationProvider: React.FC<any> = ({ children }) => {
 
     // Restart the app to apply RTL changes and refresh the UI
     try {
-      await Updates.reloadAsync();
+      // Only use Updates.reloadAsync() in production builds
+      if (__DEV__) {
+        LoggingHelper.log(
+          "Development mode: Skipping app reload. Changes applied locally.",
+        );
+      } else {
+        await Updates.reloadAsync();
+      }
     } catch (error) {
-      LoggingHelper.log('Error reloading app: ' + error);
+      LoggingHelper.log("Error reloading app: " + error);
     }
   };
 
@@ -49,9 +59,9 @@ export const LocalizationProvider: React.FC<any> = ({ children }) => {
       let localeCode = DEFAULT_LANGUAGE;
       const supportedLocaleCodes = translations.getAvailableLanguages();
       const phoneLocaleCodes = RNLocalize.getLocales().map(
-        locale => locale.languageCode,
+        (locale) => locale.languageCode,
       );
-      phoneLocaleCodes.some(code => {
+      phoneLocaleCodes.some((code) => {
         if (supportedLocaleCodes.includes(code)) {
           localeCode = code;
           return true;
@@ -71,7 +81,9 @@ export const LocalizationProvider: React.FC<any> = ({ children }) => {
         setAppLanguage: setLanguage,
         appLanguage,
         initializeAppLanguage,
-      }}>
+      }}
+      key={forceUpdate}
+    >
       {children}
     </LocalizationContext.Provider>
   );

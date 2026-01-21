@@ -246,15 +246,15 @@ class ExpoGeolocationService {
                 accuracy: 'High',
                 timeInterval: 10000,
             });
-            await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-                accuracy: Location.Accuracy.High,
-                timeInterval: 10000,      // Android (ms)
-                showsBackgroundLocationIndicator: true, // iOS
-                foregroundService: {
-                    notificationTitle: 'Tracking location',
-                    notificationBody: 'Location tracking is active',
-                },
-            });
+            // await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+            //     accuracy: Location.Accuracy.High,
+            //     timeInterval: 10000,      // Android (ms)
+            //     showsBackgroundLocationIndicator: true, // iOS
+            //     foregroundService: {
+            //         notificationTitle: 'Tracking location',
+            //         notificationBody: 'Location tracking is active',
+            //     },
+            // });
 
             console.log('✅ Expo geolocation service initialized successfully');
             this.isInitialized = true;
@@ -277,6 +277,8 @@ class ExpoGeolocationService {
             });
 
             console.log('✅ Initialization complete. Tracking active in foreground and background!');
+
+            await this.diagnoseTaskStatus();
         } catch (error) {
             console.error('❌ Failed to initialize expo geolocation service:', error);
             throw error;

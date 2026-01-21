@@ -1,12 +1,17 @@
-import { DB_EVENTS, emitter } from '@/src/eventBus/eventEmitter';
-import { LocalizationContext } from '@/src/localization/LocalizationContext';
-import { addManualNotification, clearAllNotifications, showLocalNotification } from '@/src/services/notificationService';
-import { useNotificationStore } from '@/src/store/useNotificationStore';
-import * as Notifications from 'expo-notifications';
-import { useContext, useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { AppState, FlatList, StyleSheet, View } from 'react-native';
-import { Appbar, Button, Modal, Portal, Text, TextInput, useTheme } from 'react-native-paper';
+import AddNotificationModal from "@/src/components/AddNotificationModal";
+import { DB_EVENTS, emitter } from "@/src/eventBus/eventEmitter";
+import { LocalizationContext } from "@/src/localization/LocalizationContext";
+import {
+  addManualNotification,
+  clearAllNotifications,
+  showLocalNotification,
+} from "@/src/services/notificationService";
+import { useNotificationStore } from "@/src/store/useNotificationStore";
+import * as Notifications from "expo-notifications";
+import { useContext, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { AppState, FlatList, StyleSheet, View } from "react-native";
+import { Appbar, Portal, Text, useTheme } from "react-native-paper";
 
 interface NotificationFormData {
   title: string;
@@ -20,12 +25,17 @@ export default function TabTwoScreen() {
   const { translations } = useContext(LocalizationContext);
   const theme = useTheme();
 
-  const { control, handleSubmit, reset, formState: { errors } } = useForm<NotificationFormData>({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<NotificationFormData>({
     defaultValues: {
-      title: '',
-      message: '',
-      status: 'pending'
-    }
+      title: "",
+      message: "",
+      status: "pending",
+    },
   });
 
   useEffect(() => {
@@ -39,22 +49,25 @@ export default function TabTwoScreen() {
   useEffect(() => {
     // 1. Listen for real-time DB updates
     const onNotificationsUpdated = () => {
-      console.log('Notifications updated event received, refreshing UI...');
+      console.log("Notifications updated event received, refreshing UI...");
       handleRefresh();
     };
 
     emitter.on(DB_EVENTS.NOTIFICATIONS_UPDATED, onNotificationsUpdated);
 
     // 2. Refresh when app comes to foreground
-    const subscription = AppState.addEventListener('change', nextAppState => {
-      if (nextAppState === 'active') {
-        console.log('App came to foreground, refreshing notifications...');
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "active") {
+        console.log("App came to foreground, refreshing notifications...");
         handleRefresh();
       }
     });
 
     return () => {
-      emitter.removeListener(DB_EVENTS.NOTIFICATIONS_UPDATED, onNotificationsUpdated);
+      emitter.removeListener(
+        DB_EVENTS.NOTIFICATIONS_UPDATED,
+        onNotificationsUpdated,
+      );
       subscription.remove();
     };
   }, []);
@@ -68,27 +81,33 @@ export default function TabTwoScreen() {
   return (
     <View style={{ flex: 1 }}>
       <Appbar style={{ backgroundColor: theme.colors.primary }}>
-        <Appbar.Content title={`${translations.notifications} (${logs?.length || '0'})`} titleStyle={theme.fonts.titleLarge} />
+        <Appbar.Content
+          title={`${translations.notifications} (${logs?.length || "0"})`}
+          titleStyle={theme.fonts.titleLarge}
+        />
         <Appbar.Action icon="plus" onPress={() => setIsModalVisible(true)} />
-        <Appbar.Action icon="bell-ring" onPress={async () => {
-          const { status } = await Notifications.requestPermissionsAsync();
-          if (status !== 'granted') {
-            alert(translations.notificationPermissionDenied);
-            return;
-          }
+        <Appbar.Action
+          icon="bell-ring"
+          onPress={async () => {
+            const { status } = await Notifications.requestPermissionsAsync();
+            if (status !== "granted") {
+              alert(translations.notificationPermissionDenied);
+              return;
+            }
 
-          console.log("Attempting to show test notification...");
-          const res = await showLocalNotification(
-            translations.testNotificationTitle,
-            translations.testNotificationBody
-          );
-          console.log('Notification result:', res);
-          if (res) {
-            console.log('Notification showed successfully with ID:', res);
-          } else {
-            console.log('Notification failed to show');
-          }
-        }} />
+            console.log("Attempting to show test notification...");
+            const res = await showLocalNotification(
+              translations.testNotificationTitle,
+              translations.testNotificationBody,
+            );
+            console.log("Notification result:", res);
+            if (res) {
+              console.log("Notification showed successfully with ID:", res);
+            } else {
+              console.log("Notification failed to show");
+            }
+          }}
+        />
         <Appbar.Action icon="refresh" onPress={handleRefresh} />
         <Appbar.Action icon="delete" onPress={clearAllNotifications} />
       </Appbar>
@@ -119,85 +138,30 @@ export default function TabTwoScreen() {
           )}
           contentContainerStyle={{ flexGrow: 1, padding: 16 }}
           ListEmptyComponent={
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <Text style={styles.noNotifications}>{translations.noNotifications}</Text>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text style={styles.noNotifications}>
+                {translations.noNotifications}
+              </Text>
             </View>
           }
         />
       </View>
 
       <Portal>
-        <Modal
+        <AddNotificationModal
           visible={isModalVisible}
-          onDismiss={() => setIsModalVisible(false)}
-          contentContainerStyle={styles.modalContainer}
-        >
-          <Text style={styles.modalTitle}>{translations.addNotification}</Text>
-
-          <Controller
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                label={translations.title}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                error={!!errors.title}
-                style={styles.input}
-                mode="outlined"
-              />
-            )}
-            name="title"
-          />
-          {errors.title && <Text style={styles.errorText}>{translations.fieldRequired}</Text>}
-
-          <Controller
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                label={translations.message}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                error={!!errors.message}
-                style={styles.input}
-                mode="outlined"
-                multiline
-              />
-            )}
-            name="message"
-          />
-          {errors.message && <Text style={styles.errorText}>{translations.fieldRequired}</Text>}
-
-          <Controller
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                label={translations.status}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                error={!!errors.status}
-                style={styles.input}
-                mode="outlined"
-              />
-            )}
-            name="status"
-          />
-          {errors.status && <Text style={styles.errorText}>{translations.fieldRequired}</Text>}
-
-          <View style={styles.buttonContainer}>
-            <Button mode="outlined" onPress={() => setIsModalVisible(false)} style={styles.button}>
-              {translations.cancel}
-            </Button>
-            <Button mode="contained" onPress={handleSubmit(onSubmit)} style={styles.button}>
-              {translations.save}
-            </Button>
-          </View>
-        </Modal>
+          onClose={() => setIsModalVisible(false)}
+          control={control}
+          handleSubmit={handleSubmit}
+          errors={errors}
+          onSubmit={onSubmit}
+        />
       </Portal>
     </View>
   );
@@ -208,27 +172,27 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
     borderRadius: 8,
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: "rgba(0,0,0,0.05)",
     borderLeftWidth: 4,
-    borderLeftColor: 'rgba(0, 210, 238, 1)',
+    borderLeftColor: "rgba(0, 210, 238, 1)",
   },
   notificationHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 4,
   },
   notificationTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   notificationStatus: {
     fontSize: 12,
-    backgroundColor: 'rgba(0, 210, 238, 0.2)',
+    backgroundColor: "rgba(0, 210, 238, 0.2)",
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
-    color: 'rgba(0, 150, 170, 1)',
+    color: "rgba(0, 150, 170, 1)",
   },
   notificationContent: {
     fontSize: 14,
@@ -238,40 +202,11 @@ const styles = StyleSheet.create({
   notificationTimestamp: {
     fontSize: 12,
     opacity: 0.5,
-    textAlign: 'right',
+    textAlign: "right",
   },
   noNotifications: {
-    textAlign: 'center',
+    textAlign: "center",
     padding: 20,
     opacity: 0.5,
-  },
-  modalContainer: {
-    backgroundColor: 'white',
-    padding: 20,
-    margin: 20,
-    borderRadius: 8,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  input: {
-    marginBottom: 8,
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 12,
-    marginBottom: 8,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-  },
-  button: {
-    flex: 1,
-    marginHorizontal: 4,
   },
 });

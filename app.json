@@ -57,6 +57,12 @@
           "googlePlayServicesLocationVersion": "21.1.0"
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ],
       "expo-sqlite",
       "expo-notifications",
       "@react-native-firebase/app",
