@@ -1,7 +1,7 @@
 import BackgroundGeolocation, {
     Location,
     Subscription,
-} from 'react-native-background-geolocation';
+} from "react-native-background-geolocation";
 
 /**
  * Geolocation Service Wrapper
@@ -12,7 +12,7 @@ import BackgroundGeolocation, {
  */
 
 interface GeolocationConfig {
-    desiredAccuracy?: 'High' | 'Medium' | 'Low' | 'PowerSaving';
+    desiredAccuracy?: "High" | "Medium" | "Low" | "PowerSaving";
     distanceFilter?: number;
     locationUpdateInterval?: number;
     fastestLocationUpdateInterval?: number;
@@ -40,15 +40,15 @@ class GeolocationService {
      */
     async initialize(config: GeolocationConfig = {}): Promise<void> {
         if (this.isInitialized) {
-            console.log('Geolocation service already initialized');
+            console.log("Geolocation service already initialized");
             return;
         }
 
         const {
-            desiredAccuracy = 'High',
+            desiredAccuracy = "High",
             distanceFilter = 0,
-            locationUpdateInterval = 1000,
-            fastestLocationUpdateInterval = 1000,
+            locationUpdateInterval = 5000, // 5 seconds
+            fastestLocationUpdateInterval = 5000, // 5 seconds
             disableStopDetection = true,
             allowIdenticalLocations = true,
         } = config;
@@ -66,11 +66,12 @@ class GeolocationService {
                 persistence: {},
                 geolocation: {
                     desiredAccuracy: accuracyMap[desiredAccuracy],
-                    distanceFilter,
-                    locationUpdateInterval,
-                    fastestLocationUpdateInterval,
-                    disableStopDetection,
-                    allowIdenticalLocations,
+                    distanceFilter: distanceFilter,
+                    locationUpdateInterval: locationUpdateInterval,
+                    fastestLocationUpdateInterval: fastestLocationUpdateInterval,
+                    disableStopDetection: disableStopDetection,
+                    allowIdenticalLocations: allowIdenticalLocations,
+                    activityType: BackgroundGeolocation.ActivityType.AutomotiveNavigation,
                 },
                 app: {
                     startOnBoot: true,
@@ -86,9 +87,10 @@ class GeolocationService {
                 reset: true,
             });
 
-            console.log('Geolocation service initialized:', state);
+            console.log("Geolocation service initialized:", state);
 
             if (!state.enabled) {
+                console.log("Location Track started:");
                 await this.start();
             }
 
@@ -97,7 +99,7 @@ class GeolocationService {
 
             this.isInitialized = true;
         } catch (error) {
-            console.error('Failed to initialize geolocation service:', error);
+            console.error("Failed to initialize geolocation service:", error);
             throw error;
         }
     }
@@ -108,9 +110,9 @@ class GeolocationService {
     async start(): Promise<void> {
         try {
             const state = await BackgroundGeolocation.start();
-            console.log('Geolocation tracking started:', state);
+            console.log("Geolocation tracking started:", state);
         } catch (error) {
-            console.error('Failed to start geolocation tracking:', error);
+            console.error("Failed to start geolocation tracking:", error);
             throw error;
         }
     }
@@ -121,9 +123,9 @@ class GeolocationService {
     async stop(): Promise<void> {
         try {
             const state = await BackgroundGeolocation.stop();
-            console.log('Geolocation tracking stopped:', state);
+            console.log("Geolocation tracking stopped:", state);
         } catch (error) {
-            console.error('Failed to stop geolocation tracking:', error);
+            console.error("Failed to stop geolocation tracking:", error);
             throw error;
         }
     }
@@ -134,9 +136,9 @@ class GeolocationService {
     async changePace(isMoving: boolean): Promise<void> {
         try {
             await BackgroundGeolocation.changePace(isMoving);
-            console.log(`Pace changed to: ${isMoving ? 'moving' : 'stationary'}`);
+            console.log(`Pace changed to: ${isMoving ? "moving" : "stationary"}`);
         } catch (error) {
-            console.error('Failed to change pace:', error);
+            console.error("Failed to change pace:", error);
             throw error;
         }
     }
@@ -208,7 +210,7 @@ class GeolocationService {
                     params: event.params,
                 });
             } catch (error) {
-                console.error('Error in headless task:', error);
+                console.error("Error in headless task:", error);
             }
         });
     }
@@ -220,7 +222,7 @@ class GeolocationService {
         try {
             return await BackgroundGeolocation.getState();
         } catch (error) {
-            console.error('Failed to get geolocation state:', error);
+            console.error("Failed to get geolocation state:", error);
             throw error;
         }
     }
@@ -239,9 +241,9 @@ class GeolocationService {
             // Reset tracking state
             await this.stop();
             this.isInitialized = false;
-            console.log('Geolocation service reset');
+            console.log("Geolocation service reset");
         } catch (error) {
-            console.error('Failed to reset geolocation service:', error);
+            console.error("Failed to reset geolocation service:", error);
             throw error;
         }
     }
@@ -255,7 +257,7 @@ class GeolocationService {
         });
         this.subscriptions.clear();
         this.isInitialized = false;
-        console.log('Geolocation service destroyed');
+        console.log("Geolocation service destroyed");
     }
 }
 
@@ -263,5 +265,13 @@ class GeolocationService {
 export const geolocationService = new GeolocationService();
 
 // Export types
-export type { ActivityChangeCallback, GeolocationConfig, HeadlessTaskEvent, HeadlessTaskHandler, LocationCallback, MotionChangeCallback, ProviderChangeCallback };
+export type {
+    ActivityChangeCallback,
+    GeolocationConfig,
+    HeadlessTaskEvent,
+    HeadlessTaskHandler,
+    LocationCallback,
+    MotionChangeCallback,
+    ProviderChangeCallback
+};
 
