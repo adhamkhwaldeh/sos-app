@@ -2,41 +2,21 @@ import AddNotificationModal from "@/src/components/AddNotificationModal";
 import { DB_EVENTS, emitter } from "@/src/eventBus/eventEmitter";
 import { LocalizationContext } from "@/src/localization/LocalizationContext";
 import {
-  addManualNotification,
   clearAllNotifications,
-  showLocalNotification,
+  showLocalNotification
 } from "@/src/services/notificationService";
 import { useNotificationStore } from "@/src/store/useNotificationStore";
 import * as Notifications from "expo-notifications";
 import { useContext, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import { AppState, FlatList, StyleSheet, View } from "react-native";
 import { Appbar, Portal, Text, useTheme } from "react-native-paper";
 
-interface NotificationFormData {
-  title: string;
-  message: string;
-  status: string;
-}
 
 export default function TabTwoScreen() {
   const { notifications: logs, fetchNotifications } = useNotificationStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { translations } = useContext(LocalizationContext);
   const theme = useTheme();
-
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<NotificationFormData>({
-    defaultValues: {
-      title: "",
-      message: "",
-      status: "pending",
-    },
-  });
 
   useEffect(() => {
     fetchNotifications();
@@ -71,12 +51,6 @@ export default function TabTwoScreen() {
       subscription.remove();
     };
   }, []);
-
-  const onSubmit = async (data: NotificationFormData) => {
-    await addManualNotification(data.title, data.message, data.status);
-    setIsModalVisible(false);
-    reset();
-  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -157,10 +131,10 @@ export default function TabTwoScreen() {
         <AddNotificationModal
           visible={isModalVisible}
           onClose={() => setIsModalVisible(false)}
-          control={control}
-          handleSubmit={handleSubmit}
-          errors={errors}
-          onSubmit={onSubmit}
+        // control={control}
+        // handleSubmit={handleSubmit}
+        // errors={errors}
+        // onSubmit={onSubmit}
         />
       </Portal>
     </View>

@@ -18,15 +18,11 @@ export default function HomeScreen() {
     fetchLogs();
   }, []);
 
-  const handleRefresh = () => {
-    fetchLogs();
-  };
-
   useEffect(() => {
     // 1. Listen for real-time DB updates
     const onLogsUpdated = () => {
       console.log('Logs updated event received, refreshing UI...');
-      handleRefresh();
+      fetchLogs();
     };
 
     const sub = emitter.on(DB_EVENTS.LOGS_UPDATED, onLogsUpdated);
@@ -35,7 +31,7 @@ export default function HomeScreen() {
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (nextAppState === 'active') {
         console.log('App came to foreground, refreshing logs...');
-        handleRefresh();
+        fetchLogs();
       }
     });
 
@@ -49,7 +45,7 @@ export default function HomeScreen() {
     <View style={{ flex: 1, }}>
       <Appbar style={{ backgroundColor: theme.colors.primary }}>
         <Appbar.Content title={`${translations.locationLogs} (${logs?.length || '0'})`} titleStyle={theme.fonts.titleLarge} />
-        <Appbar.Action icon="refresh" onPress={handleRefresh} />
+        <Appbar.Action icon="refresh" onPress={fetchLogs} />
         <Appbar.Action icon="delete" onPress={clearAllLogs} />
       </Appbar>
 

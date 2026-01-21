@@ -13,6 +13,7 @@ The geolocation wrapper (`src/services/geolocationService.ts`) provides a unifie
 **File:** `src/services/geolocationService.ts`
 
 **Features:**
+
 - Advanced motion detection
 - Activity classification
 - Excellent battery optimization
@@ -20,11 +21,13 @@ The geolocation wrapper (`src/services/geolocationService.ts`) provides a unifie
 - Rich provider change events
 
 **Pros:**
+
 - Production-ready
 - Well-maintained
 - Comprehensive features
 
 **Cons:**
+
 - Paid license for premium features
 - Larger bundle size
 
@@ -33,20 +36,48 @@ The geolocation wrapper (`src/services/geolocationService.ts`) provides a unifie
 **File:** `src/services/expoGeolocationService.ts`
 
 **Features:**
+
 - Built into Expo ecosystem
 - Simpler implementation
 - No external dependencies beyond Expo
 - Task Manager for background execution
 
 **Pros:**
+
 - Lightweight
 - Consistent with Expo ecosystem
 - Easier testing
 
 **Cons:**
+
 - Less sophisticated motion detection
 - Limited activity classification
 - Requires Expo managed workflow
+
+### 3. Custom Native SDK Implementation
+
+**Repository:** https://github.com/adhamkhwaldeh/liveTrackingSdk
+
+**Features:**
+
+- Full control over geolocation logic
+- Optimized native code for specific use cases
+- Tailored to your app's requirements
+- Integration with custom backend services
+
+**Pros:**
+
+- Maximum customization
+- Optimized performance
+- Native-level control
+
+**Cons:**
+
+- Requires native development expertise
+- Higher maintenance burden
+- Longer development time
+
+You can create custom implementations that depend on native code by using the liveTrackingSdk repository as a reference or base. Simply implement the same geolocation interface to ensure compatibility with the wrapper pattern.
 
 ## How to Switch Implementations
 
@@ -55,14 +86,16 @@ The geolocation wrapper (`src/services/geolocationService.ts`) provides a unifie
 Edit `src/services/geolocationService.ts` and change the import at the top:
 
 **From (react-native-background-geolocation):**
+
 ```typescript
-import BackgroundGeolocation from 'react-native-background-geolocation';
+import BackgroundGeolocation from "react-native-background-geolocation";
 // ... implementation code
 ```
 
 **To (expo-location):**
+
 ```typescript
-import { expoGeolocationService } from './expoGeolocationService';
+import { expoGeolocationService } from "./expoGeolocationService";
 export const geolocationService = expoGeolocationService;
 ```
 
@@ -84,15 +117,14 @@ The following files will work without any modifications:
 
 ## Quick Comparison
 
-| Feature | react-native | expo-location |
-|---------|-------------|----------------|
-| Background tracking | ✅ Advanced | ✅ Basic |
-| Motion detection | ✅ Native | ⚠️ Simulated |
-| Activity classification | ✅ Yes | ❌ No |
-| Headless tasks | ✅ Yes | ✅ Yes |
-| Battery optimization | ✅ Excellent | ✅ Good |
-| Learning curve | ⚠️ Moderate | ✅ Easy |
-| Cost | ⚠️ Paid features | ✅ Free |
+| Feature                 | react-native     | expo-location |
+| ----------------------- | ---------------- | ------------- |
+| Motion detection        | ✅ Native        | ⚠️ Simulated  |
+| Activity classification | ✅ Yes           | ❌ No         |
+| Headless tasks          | ✅ Yes           | ✅ Yes        |
+| Battery optimization    | ✅ Excellent     | ✅ Good       |
+| Learning curve          | ⚠️ Moderate      | ✅ Easy       |
+| Cost                    | ⚠️ Paid features | ✅ Free       |
 
 ## Implementation Details
 
@@ -143,18 +175,18 @@ Example structure:
 
 ```typescript
 class AlternativeGeolocationService {
-    async initialize(config: GeolocationConfig): Promise<void> { }
-    async start(): Promise<void> { }
-    async stop(): Promise<void> { }
-    async changePace(isMoving: boolean): Promise<void> { }
-    onLocation(callback: LocationCallback): () => void { }
-    onMotionChange(callback: MotionChangeCallback): () => void { }
-    onActivityChange(callback: ActivityChangeCallback): () => void { }
-    onProviderChange(callback: ProviderChangeCallback): () => void { }
-    registerHeadlessTask(handler: HeadlessTaskHandler): void { }
-    async getState(): Promise<any> { }
-    async reset(): Promise<void> { }
-    destroy(): void { }
+  async initialize(config: GeolocationConfig): Promise<void> {}
+  async start(): Promise<void> {}
+  async stop(): Promise<void> {}
+  async changePace(isMoving: boolean): Promise<void> {}
+  onLocation(callback: LocationCallback): () => void {}
+  onMotionChange(callback: MotionChangeCallback): () => void {}
+  onActivityChange(callback: ActivityChangeCallback): () => void {}
+  onProviderChange(callback: ProviderChangeCallback): () => void {}
+  registerHeadlessTask(handler: HeadlessTaskHandler): void {}
+  async getState(): Promise<any> {}
+  async reset(): Promise<void> {}
+  destroy(): void {}
 }
 ```
 
