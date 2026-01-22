@@ -5,6 +5,7 @@ An emergency response mobile application built with **Expo** and **React Native*
 ## 📱 About the Project
 
 The SOS App is a cross-platform mobile application that enables emergency responders to:
+
 - Receive and respond to SOS alerts in real-time
 - Track their location continuously in the background
 - View and manage notifications
@@ -17,6 +18,7 @@ This application combines Expo's powerful development framework with React Nativ
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js (v16 or higher)
 - npm or yarn
 - Expo CLI: `npm install -g expo-cli`
@@ -26,17 +28,20 @@ This application combines Expo's powerful development framework with React Nativ
 ### Installation & Running
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd sos-app
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Start the development server**
+
    ```bash
    npm start
    ```
@@ -49,6 +54,7 @@ This application combines Expo's powerful development framework with React Nativ
 ### Alternative: Using Expo Go
 
 After running `npm start`, you can:
+
 - Scan the QR code with Expo Go app (iOS/Android)
 - View the app on your physical device instantly
 
@@ -58,29 +64,46 @@ After running `npm start`, you can:
 - **Background Geolocation** - Continuous location tracking even when app is in background
 - **Dark/Light Mode** - Automatic theme switching based on system preferences
 - **Tab Navigation** - Intuitive bottom tab navigation with haptic feedback
-- **Parallax Scrolling** - Smooth parallax effects for enhanced user experience
 - **Modal Support** - Native modal presentations for additional screens
 - **File-Based Routing** - Modern routing using Expo Router
 - **Multi-Language Support** - English, Arabic, and German localization
 - **Real-Time Notifications** - Event-driven updates using EventEmitter3
 - **Local Storage** - SQLite database with Drizzle ORM
 
+## 📸 Screenshots
+
+Here are some screenshots of the SOS App in action:
+
+<div align="center">
+  <img src="demo/Screenshot_2026-01-22-13-16-18-565_com.adham.sosapp.jpg" width="200" alt="Screenshot 1" />
+  <img src="demo/Screenshot_2026-01-22-13-16-27-100_com.adham.sosapp.jpg" width="200" alt="Screenshot 2" />
+  <img src="demo/Screenshot_2026-01-22-13-16-30-520_com.adham.sosapp.jpg" width="200" alt="Screenshot 3" />
+  <img src="demo/Screenshot_2026-01-22-13-16-34-372_com.adham.sosapp.jpg" width="200" alt="Screenshot 4" />
+</div>
+
+<div align="center">
+  <img src="demo/Screenshot_2026-01-22-13-16-41-635_com.adham.sosapp.jpg" width="200" alt="Screenshot 5" />
+  <img src="demo/Screenshot_2026-01-22-13-16-44-069_com.adham.sosapp.jpg" width="200" alt="Screenshot 6" />
+  <img src="demo/Screenshot_2026-01-22-13-16-46-915_com.adham.sosapp.jpg" width="200" alt="Screenshot 7" />
+  <img src="demo/Screenshot_2026-01-22-13-16-52-100_com.adham.sosapp.jpg" width="200" alt="Screenshot 8" />
+</div>
+
 ## 🛠️ Tech Stack
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Expo | ~54.0.31 | Development framework |
-| React Native | 0.81.5 | Cross-platform mobile development |
-| React | 19.1.0 | UI library |
-| Expo Router | ~6.0.21 | File-based navigation |
-| React Navigation | 7.x | Navigation infrastructure |
-| React Native Paper | 5.14.5 | Material Design UI components |
-| React Native Reanimated | ~4.1.1 | Animations |
-| Background Geolocation | ^5.0.0 | Location tracking |
-| EventEmitter3 | Latest | Event management |
-| Drizzle ORM | ^0.45.1 | Database ORM |
-| Zustand | Latest | State management |
-| TypeScript | ~5.9.2 | Type safety |
+| Technology              | Version  | Purpose                           |
+| ----------------------- | -------- | --------------------------------- |
+| Expo                    | ~54.0.31 | Development framework             |
+| React Native            | 0.81.5   | Cross-platform mobile development |
+| React                   | 19.1.0   | UI library                        |
+| Expo Router             | ~6.0.21  | File-based navigation             |
+| React Navigation        | 7.x      | Navigation infrastructure         |
+| React Native Paper      | 5.14.5   | Material Design UI components     |
+| React Native Reanimated | ~4.1.1   | Animations                        |
+| Background Geolocation  | ^5.0.0   | Location tracking                 |
+| EventEmitter3           | Latest   | Event management                  |
+| Drizzle ORM             | ^0.45.1  | Database ORM                      |
+| Zustand                 | Latest   | State management                  |
+| TypeScript              | ~5.9.2   | Type safety                       |
 
 ## 📂 Project Structure
 
@@ -126,6 +149,7 @@ sos-app/
 ## 📚 Documentation
 
 For detailed technical documentation, see:
+
 - `README_App_technical.md` - Technical architecture and implementation details
 - `README_App_business.md` - Business features and requirements
 - `GEOLOCATION_IMPLEMENTATION_GUIDE.md` - Location tracking setup guide
@@ -133,13 +157,16 @@ For detailed technical documentation, see:
 ## 🐛 Troubleshooting
 
 ### Build issues on Android
+
 - Clear cache: `npm run reset-project`
 - Rebuild: `npm run android`
 
 ### Port conflicts
+
 - Change port in `npm start -- --port 8081`
 
 ### Dependency issues
+
 - Remove node_modules and reinstall: `rm -r node_modules && npm install`
 
 ## 📄 License
@@ -149,16 +176,19 @@ This project is proprietary. All rights reserved.
 ## 👤 Author
 
 **Adham Khwaldeh**
+
 - GitHub: [@adhamkhwaldeh](https://github.com/adhamkhwaldeh)
-| Typed Routes | Enabled |
-| React Compiler | Enabled |
+  | Typed Routes | Enabled |
+  | React Compiler | Enabled |
 
 ### Platform-Specific Settings
 
 **iOS:**
+
 - Tablet support enabled
 
 **Android:**
+
 - Adaptive icon with custom foreground/background
 - Edge-to-edge display enabled
 - Background color: `#E6F4FE`
@@ -166,6 +196,7 @@ This project is proprietary. All rights reserved.
 ## 📦 Key Dependencies
 
 ### Production
+
 - `expo` - Core Expo SDK
 - `expo-router` - File-based routing
 - `react-native-background-geolocation` - Background location tracking
@@ -174,6 +205,7 @@ This project is proprietary. All rights reserved.
 - `expo-haptics` - Haptic feedback
 
 ### Development
+
 - `typescript` - Static type checking
 - `eslint` - Code linting
 
