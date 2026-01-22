@@ -5,7 +5,7 @@ import { addManualNotification } from "@/src/services/notificationService";
 import { useContext } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
-import { Button, Modal, Text, TextInput, useTheme } from "react-native-paper";
+import { Button, HelperText, Modal, Text, TextInput, useTheme } from "react-native-paper";
 
 export default function AddNotificationModal({
   visible,
@@ -50,64 +50,91 @@ export default function AddNotificationModal({
 
         <Controller
           control={control}
-          rules={{ required: true }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              label={translations.title}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              error={!!errors.title}
-              style={styles.input}
-              mode="outlined"
-            />
-          )}
+          rules={{ required: { value: true, message: translations.fieldRequired } }}
           name="title"
+          render={({
+            field: { onChange, onBlur, value, ref },
+            fieldState: { invalid, isTouched, isDirty, error },
+            formState: { errors },
+          }) => (
+            <View style={styles.input}>
+              <TextInput
+                label={translations.title}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                mode="outlined"
+                ref={ref}
+                error={invalid}
+              />
+              {invalid && (
+                <HelperText type="error" visible={invalid}>
+                  {error ? error.message : null}
+                </HelperText>
+              )}
+            </View>
+          )}
         />
-        {errors.title && (
-          <Text style={styles.errorText}>{translations.fieldRequired}</Text>
-        )}
 
         <Controller
           control={control}
-          rules={{ required: true }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              label={translations.message}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              error={!!errors.message}
-              style={styles.input}
-              mode="outlined"
-              multiline
-            />
-          )}
+          rules={{ required: { value: true, message: translations.fieldRequired } }}
           name="message"
+          render={({
+            field: { onChange, onBlur, value, ref },
+            fieldState: { invalid, isTouched, isDirty, error },
+            formState: { errors }
+          }) => (
+            <View style={styles.input}>
+              <TextInput
+                label={translations.message}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                error={invalid}
+                ref={ref}
+                mode="outlined"
+                multiline
+              />
+
+              {invalid && (
+                <HelperText type="error" visible={invalid}>
+                  {error ? error.message : null}
+                </HelperText>
+              )}
+            </View>
+          )}
         />
-        {errors.message && (
-          <Text style={styles.errorText}>{translations.fieldRequired}</Text>
-        )}
 
         <Controller
           control={control}
-          rules={{ required: true }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              label={translations.status}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              error={!!errors.status}
-              style={styles.input}
-              mode="outlined"
-            />
-          )}
+          rules={{ required: { value: true, message: translations.fieldRequired } }}
           name="status"
+          render={({
+            field: { onChange, onBlur, value, ref },
+            fieldState: { invalid, isTouched, isDirty, error },
+            formState: { errors }
+          }) => (
+            <View style={styles.input}>
+              <TextInput
+                label={translations.status}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                error={invalid}
+                ref={ref}
+                mode="outlined"
+              />
+
+              {invalid && (
+                <HelperText type="error" visible={invalid}>
+                  {error ? error.message : null}
+                </HelperText>
+              )}
+            </View>
+          )}
+
         />
-        {errors.status && (
-          <Text style={styles.errorText}>{translations.fieldRequired}</Text>
-        )}
 
         <View style={styles.buttonContainer}>
           <Button mode="outlined" onPress={onClose} style={styles.button}>

@@ -15,9 +15,9 @@ export const useBackgroundGeolocation = () => {
                 // Initialize the geolocation service
                 await geolocationService.initialize({
                     desiredAccuracy: "High",
-                    distanceFilter: 1,
-                    locationUpdateInterval: 5000, // 5 seconds
-                    fastestLocationUpdateInterval: 5000, // 5 seconds
+                    distanceFilter: 0,
+                    locationUpdateInterval: 1000, // 5 seconds
+                    fastestLocationUpdateInterval: 1000, // 5 seconds
                     disableStopDetection: true,
                     allowIdenticalLocations: true,
                 });

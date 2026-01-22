@@ -47,8 +47,8 @@ class GeolocationService {
         const {
             desiredAccuracy = "High",
             distanceFilter = 0,
-            locationUpdateInterval = 5000, // 5 seconds
-            fastestLocationUpdateInterval = 5000, // 5 seconds
+            locationUpdateInterval = 1000, // 5 seconds
+            fastestLocationUpdateInterval = 1000, // 5 seconds
             disableStopDetection = true,
             allowIdenticalLocations = true,
         } = config;

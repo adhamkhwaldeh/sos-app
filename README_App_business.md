@@ -10,7 +10,6 @@ An emergency response mobile application designed for first responders to receiv
 - [Features](#features)
   - [Location Tracking](#location-tracking)
   - [Health Check Status](#health-check-status)
-  - [Responder Modes](#responder-modes)
   - [Incident Module](#incident-module)
 
 ---
@@ -38,7 +37,7 @@ The app implements **intelligent location tracking** with different modes and up
 | **Idle** | 10 seconds | 10 meters | Updates every 5-10 minutes as bulk updates or after significant movement |
 | **On Duty** | 5 seconds | 5 meters | High frequency for active availability |
 | **Emergency** | 1 second | None | Real-time streaming for critical response |
-| **Save Mode** | 15 minutes | N/A | Ultra-low power (auto-activated) |
+| **Save Mode** | 15 minutes | N/A | Ultra-low power (auto-activated) - On demand - manual update |
 
 #### Update Strategies
 
@@ -85,7 +84,6 @@ Preferred protocols for instant location streaming (in order of preference):
 | **MQTT** | Lightweight pub/sub messaging | IoT-optimized, low bandwidth |
 
 > Fallback: If real-time connection fails, use HTTP POST with immediate retry.
-- Shares precise ETA with SOS requester
 
 | Parameter | Emergency Value | Standard Value |
 |-----------|-----------------|----------------|
@@ -146,7 +144,6 @@ Each tracking record contains the following data:
 | `altitude` | Float | Altitude in meters above sea level |
 | `speed` | Float | Current speed (m/s or km/h) |
 | `heading` | Float | Heading/bearing in degrees (0-360) |
-| `batteryLevel` | Float | Device battery percentage at time of capture |
 
 #### Location Availability & Liveness
 
@@ -160,13 +157,13 @@ Ensuring continuous location visibility is paramount for responder safety and di
 4.  **Backoffice Request**: Dispatch can request an immediate location update via push notification.
 
 **Manual Location Check-in:**
-Responders can force a location update when automated tracking is insufficient (e.g., stationary but want to confirm presence):
+Responders can force a location update when automated tracking is insufficient:
 - **Action**: "Send Location" / "Check-in" button.
 - **Use Case**: Verifying position when GPS is degraded or confirming arrival at a specific point.
 
 **On-Demand Location Request:**
 Dispatch can trigger a location poll independent of the current tracking mode:
-- **Silent Request**: Triggers a background location capture (if permissions/OS allow).
+- **Silent Request**: Triggers a background location capture.
 - **Interactive Request**: Sends a high-priority notification requesting the responder to open the app and confirm their location.
 
 ---
@@ -252,8 +249,6 @@ Health data syncs alongside location data using the same batch approach:
 | **Emergency Sync** | Health data sent immediately with real-time location updates |
 | **Degraded Sync** | If network is poor, health data is queued and prioritized behind location |
 
-> **Privacy Note:** All health data is encrypted in transit and at rest. Responders can disable wearable data collection at any time in settings.
-
 #### Liveness & Reachability
 
 Responder liveness is determined by the continuous receipt of **Health Monitoring data**.
@@ -270,7 +265,7 @@ Responder liveness is determined by the continuous receipt of **Health Monitorin
 
 **Manual Health Reporting:**
 If the automated signal fails, the responder can use the **Manual Status Report** feature:
-- **Status**: Safe / In Danger
+- **Status**: Safe / In Danger / Unknown
 - **Vitals**: Manual entry of heart rate (optional)
 - **Note**: Brief message to dispatch
 
@@ -279,41 +274,7 @@ Dispatch can trigger a "Status Request" push notification.
 - **Action**: Responder receives a high-priority notification.
 - **Response**: Tapping the notification opens the Manual Status Report screen.
 
----
 
-#### Collection Criteria
-
-Location data is collected based on configurable thresholds:
-
-| Parameter | Default Value | Description |
-|-----------|---------------|-------------|
-| **Time Interval** | 5 seconds | Minimum time between location captures |
-| **Distance Threshold** | 5 meters | Minimum movement to trigger a new record |
-
-> **Note:** A new record is captured when *both* criteria are met (5 seconds elapsed AND 5+ meters moved).
-
-#### Data Sync Strategy
-
-To optimize network usage and ensure reliability, location data follows a **batch sync** approach:
-
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Capture    │ ──▶ │ Store Local  │ ──▶ │  Bulk Upload │ ──▶ │ Clear Local  │
-│   Location   │     │   (Queue)    │     │  (5 minutes) │     │  (On Success)│
-└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
-```
-
-| Step | Description |
-|------|-------------|
-| 1. **Capture** | Location captured based on collection criteria |
-| 2. **Store Locally** | Record saved to local storage/queue |
-| 3. **Bulk Upload** | Every 5 minutes, all queued records sent to server as bulk data or file |
-| 4. **Clear on Success** | Local data cleared only after successful server acknowledgment |
-
-**Sync Features:**
-- Offline resilience: Data persists locally until sync succeeds
-- Retry mechanism: Failed uploads are retried on next sync cycle
-- Data integrity: Local data is only cleared after confirmed server receipt
 
 ---
 
@@ -353,31 +314,6 @@ Common scenarios where GPS signal may be temporarily lost:
 | **Dense Urban Area** | Signal reflection/multipath | Use averaged position |
 
 > **Note:** During GPS unavailable periods, the app uses the last known good location and notifies dispatch of the degraded state.
-
-### Responder Modes
-
-Responders can switch between operational modes based on their availability:
-
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  OFF SHIFT  │ ──▶ │    IDLE     │ ──▶ │   ON DUTY   │ ──▶ │  EMERGENCY  │
-│ (Offline)   │     │  (Standby)  │     │ (Available) │     │ (Responding)│
-└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
-       ▲                   │                   │                   │
-       └───────────────────┴───────────────────┴───────────────────┘
-```
-
-#### Mode Transitions
-
-| From | To | Trigger |
-|------|----|---------|
-| Off Shift | Idle | Responder opens app / starts standby |
-| Idle | On Duty | Responder accepts incident assignment |
-| On Duty | Emergency | SOS alert accepted (critical emergency) |
-| Emergency | On Duty | Emergency resolved |
-| On Duty | Idle | Responder pauses shift / incident completed |
-| Idle | Off Shift | Responder goes completely offline |
-| Emergency | Off Shift | Emergency resolved + shift ended |
 
 ---
 

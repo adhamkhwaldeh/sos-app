@@ -1,6 +1,6 @@
-import { db } from '@/src/db/client';
-import { notifications } from '@/src/db/schema';
-import { DB_EVENTS, emitter } from '@/src/eventBus/eventEmitter';
+import { db } from "@/src/db/client";
+import { notifications } from "@/src/db/schema";
+import { DB_EVENTS, emitter } from "@/src/eventBus/eventEmitter";
 import {
     AuthorizationStatus,
     getInitialNotification,
@@ -8,212 +8,288 @@ import {
     getToken,
     onMessage,
     onNotificationOpenedApp,
-    requestPermission
-} from '@react-native-firebase/messaging';
-import { useNotificationStore } from '../store/useNotificationStore';
+    requestPermission,
+} from "@react-native-firebase/messaging";
+import { useNotificationStore } from "../store/useNotificationStore";
+
+import * as Notifications from "expo-notifications";
+import { PermissionsAndroid, Platform } from "react-native";
 
 const messaging = getMessaging();
 
-import * as Notifications from 'expo-notifications';
-import { PermissionsAndroid, Platform } from 'react-native';
+// Store FCM token for background operations
+let cachedFcmToken: string | null = null;
 
 // Configure expo-notifications to show notifications in the foreground
 Notifications.setNotificationHandler({
-    handleNotification: async () => {
-        console.log('[NotificationHandler] Triggered!');
-        return {
-            shouldShowAlert: true,
-            shouldPlaySound: true,
-            shouldSetBadge: true,
-            shouldShowBanner: true,
-            shouldShowList: true,
-        };
-    },
+  handleNotification: async () => {
+    console.log("[NotificationHandler] Triggered!");
+    return {
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldSetTabBadge: true,
+    };
+  },
 });
 
 // Create a notification channel for Android
-if (Platform.OS === 'android') {
-    Notifications.setNotificationChannelAsync('default', {
-        name: 'Default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
-    }).then(() => {
-        console.log('[NotificationChannel] "default" created successfully');
-    }).catch(error => {
-        console.error('[NotificationChannel] Failed to create channel:', error);
+if (Platform.OS === "android") {
+  Notifications.setNotificationChannelAsync("default", {
+    name: "Default",
+    importance: Notifications.AndroidImportance.MAX,
+    vibrationPattern: [0, 250, 250, 250],
+    lightColor: "#FF231F7C",
+  })
+    .then(() => {
+      console.log('[NotificationChannel] "default" created successfully');
+    })
+    .catch((error) => {
+      console.error("[NotificationChannel] Failed to create channel:", error);
     });
 }
 
-export const showLocalNotification = async (title: string, body: string, data?: any) => {
-    try {
-        console.log(`[showLocalNotification] Scheduling: "${title}"`);
+export const showLocalNotification = async (
+  title: string,
+  body: string,
+  data?: any,
+) => {
+  try {
+    console.log(`[showLocalNotification] Scheduling: "${title}"`);
 
-        // Check permissions first
-        const settings = await Notifications.getPermissionsAsync();
-        console.log('[showLocalNotification] Current permissions:', settings.status);
+    // Check permissions first
+    const settings = await Notifications.getPermissionsAsync();
+    console.log(
+      "[showLocalNotification] Current permissions:",
+      settings.status,
+    );
 
-        if (settings.status !== 'granted') {
-            console.log('[showLocalNotification] Permissions not granted, requesting...');
-            const { status } = await Notifications.requestPermissionsAsync();
-            if (status !== 'granted') {
-                console.error('[showLocalNotification] Permissions still not granted');
-                return null;
-            }
-        }
-
-        const identifier = await Notifications.scheduleNotificationAsync({
-            content: {
-                title,
-                body,
-                // data: data || {},
-                // sound: true,
-                // priority: Notifications.AndroidNotificationPriority.HIGH,
-                // channelId: 'default',
-            },
-            trigger: null, // show immediately
-            // identifier: "adsads",
-        });
-        console.log('[showLocalNotification] Scheduled successfully, ID:', identifier);
-        return identifier;
-    } catch (error) {
-        console.error('[showLocalNotification] Error:', error);
+    if (settings.status !== "granted") {
+      console.log(
+        "[showLocalNotification] Permissions not granted, requesting...",
+      );
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== "granted") {
+        console.error("[showLocalNotification] Permissions still not granted");
         return null;
+      }
     }
+
+    const identifier = await Notifications.scheduleNotificationAsync({
+      content: {
+        title,
+        body,
+        data: data || {},
+        sound: true,
+        priority: Notifications.AndroidNotificationPriority.HIGH,
+        badge: 1,
+        vibrate: [0, 250, 250, 250],
+      },
+      trigger: null, // Show immediately (null = instant)
+    });
+    console.log(
+      "[showLocalNotification] Scheduled successfully, ID:",
+      identifier,
+    );
+    return identifier;
+  } catch (error) {
+    console.error("[showLocalNotification] Error:", error);
+    return null;
+  }
 };
 
 export const saveNotification = async (remoteMessage: any) => {
-    console.log('[saveNotification] Saving to DB:', JSON.stringify(remoteMessage));
-    const { notification, sentTime } = remoteMessage;
-    if (notification) {
-        try {
-            await db.insert(notifications).values({
-                title: notification.title || 'No Title',
-                content: notification.body || 'No Content',
-                // status: 'received',
-                timestamp: sentTime ? new Date(sentTime).toISOString() : new Date().toISOString(),
-            });
-            console.log('[saveNotification] Saved to database');
+  console.log(
+    "[saveNotification] Saving to DB:",
+    JSON.stringify(remoteMessage),
+  );
+  const { notification, sentTime } = remoteMessage;
+  if (notification) {
+    try {
+      await db.insert(notifications).values({
+        title: notification.title || "No Title",
+        content: notification.body || "No Content",
+        // status: 'received',
+        timestamp: sentTime
+          ? new Date(sentTime).toISOString()
+          : new Date().toISOString(),
+      });
+      console.log("[saveNotification] Saved to database");
 
-            // Update Zustand Store
-            useNotificationStore.getState().fetchNotifications();
+      // Update Zustand Store
+      useNotificationStore.getState().fetchNotifications();
 
-            emitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
+      emitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
 
-
-            // Show local notification using expo-notifications
-            await showLocalNotification(
-                notification.title || 'No Title',
-                notification.body || 'No Content',
-                remoteMessage.data
-            );
-        } catch (error) {
-            console.error('[saveNotification] Failed to save to database:', error);
-        }
+      // Show local notification using expo-notifications
+      await showLocalNotification(
+        notification.title || "No Title",
+        notification.body || "No Content",
+        remoteMessage.data,
+      );
+    } catch (error) {
+      console.error("[saveNotification] Failed to save to database:", error);
     }
+  }
 };
 
-export const addManualNotification = async (title: string, content: string, status: string) => {
-    try {
-        await db.insert(notifications).values({
-            title,
-            content,
-            //status,
-            timestamp: new Date().toISOString(),
-        });
-        console.log('[addManualNotification] Saved to database');
+export const addManualNotification = async (
+  title: string,
+  content: string,
+  status: string,
+) => {
+  try {
+    await db.insert(notifications).values({
+      title,
+      content,
+      //status,
+      timestamp: new Date().toISOString(),
+    });
+    console.log("[addManualNotification] Saved to database");
 
-        // Update Zustand Store
-        useNotificationStore.getState().fetchNotifications();
+    // Update Zustand Store
+    useNotificationStore.getState().fetchNotifications();
 
-        emitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
+    emitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
 
-        // Show local notification
-        await showLocalNotification(title, content);
-    } catch (error) {
-        console.error('[addManualNotification] Failed to save to database:', error);
-    }
+    // Show local notification
+    await showLocalNotification(title, content);
+  } catch (error) {
+    console.error("[addManualNotification] Failed to save to database:", error);
+  }
+};
+
+// Register FCM token for backend use
+export const registerFcmToken = async (fcmToken: string) => {
+  try {
+    console.log("[registerFcmToken] Registering token:", fcmToken);
+    cachedFcmToken = fcmToken;
+    
+    // TODO: Send token to your backend API
+    // Example:
+    // await api.post('/register-fcm-token', { fcmToken, userId: currentUserId })
+    
+    return fcmToken;
+  } catch (error) {
+    console.error("[registerFcmToken] Failed to register token:", error);
+    return null;
+  }
+};
+
+// Get cached FCM token (useful for background operations)
+export const getCachedFcmToken = () => {
+  return cachedFcmToken;
 };
 
 class NotificationService {
-    async requestUserPermission() {
-        if (Platform.OS === 'android' && Platform.Version >= 33) {
-            const granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
-            );
-            return granted === PermissionsAndroid.RESULTS.GRANTED;
-        } else {
-            const authStatus = await requestPermission(messaging);
-            const enabled =
-                authStatus === AuthorizationStatus.AUTHORIZED ||
-                authStatus === AuthorizationStatus.PROVISIONAL;
-            return enabled;
+  async requestUserPermission() {
+    if (Platform.OS === "android" && Platform.Version >= 33) {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } else {
+      const authStatus = await requestPermission(messaging);
+      const enabled =
+        authStatus === AuthorizationStatus.AUTHORIZED ||
+        authStatus === AuthorizationStatus.PROVISIONAL;
+      return enabled;
+    }
+  }
+
+  async getFcmToken() {
+    try {
+      const fcmToken = await getToken(messaging);
+      if (fcmToken) {
+        console.log("FCM Token:", fcmToken);
+        // Register the token for backend use
+        await registerFcmToken(fcmToken);
+        return fcmToken;
+      }
+    } catch (error) {
+      console.error("Failed to get FCM token:", error);
+    }
+    return null;
+  }
+
+  setupListeners() {
+    // Foreground message listener
+    const unsubscribeForeground = onMessage(
+      messaging,
+      async (remoteMessage) => {
+        console.log(
+          "Foreground Message received:",
+          JSON.stringify(remoteMessage),
+        );
+        
+        // Register token on every message (token might be refreshed)
+        if (!cachedFcmToken) {
+          await this.getFcmToken();
         }
-    }
+        
+        await saveNotification(remoteMessage);
+      },
+    );
 
-    async getFcmToken() {
-        try {
-            const fcmToken = await getToken(messaging);
-            if (fcmToken) {
-                console.log('FCM Token:', fcmToken);
-                return fcmToken;
-            }
-        } catch (error) {
-            console.error('Failed to get FCM token:', error);
+    // Background/Quit state message listener (when app is opened via notification)
+    onNotificationOpenedApp(messaging, async (remoteMessage) => {
+      console.log(
+        "Notification caused app to open from background state:",
+        remoteMessage.notification,
+      );
+      
+      // Register token when app opens from background
+      if (!cachedFcmToken) {
+        await this.getFcmToken();
+      }
+    });
+
+    // Check if app was opened from a quit state
+    getInitialNotification(messaging).then(async (remoteMessage) => {
+      if (remoteMessage) {
+        console.log(
+          "Notification caused app to open from quit state:",
+          remoteMessage.notification,
+        );
+        
+        // Register token when app opens from quit state
+        if (!cachedFcmToken) {
+          await this.getFcmToken();
         }
-        return null;
+      }
+    });
+
+    return unsubscribeForeground;
+  }
+
+  async initialize() {
+    console.log("Initializing NotificationService...");
+    const hasPermission = await this.requestUserPermission();
+    if (hasPermission) {
+      console.log("Notification permission granted");
+      await this.getFcmToken();
+      return this.setupListeners();
+    } else {
+      console.log("Notification permission denied");
     }
-
-    setupListeners() {
-        // Foreground message listener
-        const unsubscribeForeground = onMessage(messaging, async (remoteMessage) => {
-            console.log('Foreground Message received:', JSON.stringify(remoteMessage));
-            await saveNotification(remoteMessage);
-        });
-
-        // Background/Quit state message listener (when app is opened via notification)
-        onNotificationOpenedApp(messaging, (remoteMessage) => {
-            console.log('Notification caused app to open from background state:', remoteMessage.notification);
-        });
-
-        // Check if app was opened from a quit state
-        getInitialNotification(messaging)
-            .then((remoteMessage) => {
-                if (remoteMessage) {
-                    console.log('Notification caused app to open from quit state:', remoteMessage.notification);
-                }
-            });
-
-        return unsubscribeForeground;
-    }
-
-    async initialize() {
-        console.log('Initializing NotificationService...');
-        const hasPermission = await this.requestUserPermission();
-        if (hasPermission) {
-            console.log('Notification permission granted');
-            await this.getFcmToken();
-            return this.setupListeners();
-        } else {
-            console.log('Notification permission denied');
-        }
-        return null;
-    }
+    return null;
+  }
 }
 
 export const clearAllNotifications = async () => {
-    try {
-        await db.delete(notifications);
-        console.log('All notifications cleared');
+  try {
+    await db.delete(notifications);
+    console.log("All notifications cleared");
 
-        // Update Zustand Store
-        useNotificationStore.getState().clearNotifications();
+    // Update Zustand Store
+    useNotificationStore.getState().clearNotifications();
 
-        emitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
-
-    } catch (error) {
-        console.error('Failed to clear notifications:', error);
-    }
+    emitter.emit(DB_EVENTS.NOTIFICATIONS_UPDATED);
+  } catch (error) {
+    console.error("Failed to clear notifications:", error);
+  }
 };
 
 export const notificationService = new NotificationService();
