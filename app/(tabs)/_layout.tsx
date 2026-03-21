@@ -26,6 +26,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="bond-calculator"
+        options={{
+          title: translations.bondCalculator,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="dollarsign.circle.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="notifications"
         options={{
           title: translations.notifications,
