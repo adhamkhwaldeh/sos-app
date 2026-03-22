@@ -70,6 +70,11 @@ After running `npm start`, you can:
 - **Real-Time Notifications** - Event-driven updates using EventEmitter3
 - **Local Storage** - SQLite database with Drizzle ORM
 
+## 🎥 Video Demo
+
+Watch a quick demonstration of the app in action:
+[SOS App Demo Video](https://www.youtube.com/shorts/Q-2I8_RRiy0)
+
 ## 📸 Screenshots
 
 Here are some screenshots of the SOS App in action:
