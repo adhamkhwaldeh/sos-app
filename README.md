@@ -75,6 +75,13 @@ After running `npm start`, you can:
 Here are some screenshots of the SOS App in action:
 
 <div align="center">
+  <img src="demo/Screenshot_2026-03-22 14.24.15.jpeg" width="200" alt="Screenshot 1" />
+  <img src="demo/Screenshot_2026-03-22 14.28.33.jpeg" width="200" alt="Screenshot 2" />
+  <img src="demo/Screenshot_2026-03-22 14.40.04.jpeg" width="200" alt="Screenshot 3" />
+  <img src="demo/Screenshot_2026-03-22 14.40.08.jpeg" width="200" alt="Screenshot 4" />
+</div>
+
+<div align="center">
   <img src="demo/Screenshot_2026-01-22-13-16-18-565_com.adham.sosapp.jpg" width="200" alt="Screenshot 1" />
   <img src="demo/Screenshot_2026-01-22-13-16-27-100_com.adham.sosapp.jpg" width="200" alt="Screenshot 2" />
   <img src="demo/Screenshot_2026-01-22-13-16-30-520_com.adham.sosapp.jpg" width="200" alt="Screenshot 3" />

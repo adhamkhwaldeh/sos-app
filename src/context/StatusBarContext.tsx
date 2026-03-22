@@ -1,9 +1,5 @@
 import React, { createContext, useState } from 'react';
-// import i18n from 'i18n-js';
 import { StatusBar, View } from 'react-native';
-// import {I18nManager} from 'react-native';
-// import * as RNLocalize from 'react-native-localize';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   initialWindowMetrics,
   SafeAreaProvider,

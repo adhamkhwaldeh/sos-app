@@ -19,6 +19,7 @@ const MAPPING = {
   'gear': 'settings',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'dollarsign.circle.fill': 'monetization-on',
 } as IconMapping;
 
 /**

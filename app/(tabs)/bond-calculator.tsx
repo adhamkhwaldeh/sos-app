@@ -1,10 +1,13 @@
 import { BondInputs } from '@/src/data/types/BondCalculator';
 import { LocalizationContext } from '@/src/localization/LocalizationContext';
 import { useBondStore } from '@/src/store/useBondStore';
-import React, { useContext, useEffect } from 'react';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import React, { useContext, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Card, DataTable, Divider, HelperText, SegmentedButtons, Text, TextInput, useTheme } from 'react-native-paper';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Card, DataTable, HelperText, SegmentedButtons, Text, TextInput, useTheme } from 'react-native-paper';
+
+
 
 export default function BondCalculatorScreen() {
   const { translations } = useContext(LocalizationContext);
@@ -14,6 +17,7 @@ export default function BondCalculatorScreen() {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<BondInputs>({
     defaultValues: inputs,
@@ -39,6 +43,18 @@ export default function BondCalculatorScreen() {
 
   const formatPercentage = (value: number) => {
     return `${value.toFixed(4)}%`;
+  };
+
+
+  const [date, setDate] = useState(new Date());
+
+  const [show, setShow] = useState(false);
+
+  const onDateChange = (selectedDate: Date | undefined) => {
+    var innerDate = selectedDate || date;
+    setValue('issueDate', innerDate);
+    setShow(Platform.OS === 'ios'); // iOS stays open
+    setDate(innerDate);
   };
 
   return (
@@ -139,24 +155,33 @@ export default function BondCalculatorScreen() {
             control={control}
             rules={{ required: true }}
             name="issueDate"
-            render={({ field: { onChange, onBlur, value } }) => (
+            render={({ field: { onBlur, value } }) => (
               <TextInput
                 label={translations.issueDate}
                 onBlur={onBlur}
-                onChangeText={(text) => {
-                  const date = new Date(text);
-                  if (!isNaN(date.getTime())) {
-                    onChange(date);
-                  }
+                value={value instanceof Date ? value.toLocaleDateString() : new Date(value).toLocaleDateString()}
+                onPress={() => {
+                  setShow(true);
                 }}
-                value={value.toLocaleDateString()}
                 placeholder="MM/DD/YYYY"
                 mode="outlined"
                 style={styles.input}
               />
             )}
           />
+
           {errors.issueDate && <HelperText type="error">{translations.fieldRequired}</HelperText>}
+
+          {show && (
+            <DateTimePicker
+              value={date}
+              mode="date" // "time" or "datetime"
+              display="default"
+              onChange={(type, date) => {
+                onDateChange(date)
+              }}
+            />
+          )}
 
           <Button mode="contained" onPress={handleSubmit(onSubmit)} style={styles.button}>
             {translations.calculate}

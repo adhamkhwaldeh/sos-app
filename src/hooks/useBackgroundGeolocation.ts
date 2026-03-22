@@ -27,7 +27,7 @@ export const useBackgroundGeolocation = () => {
 
                 // Subscribe to location updates
                 unsubscribeLocation = geolocationService.onLocation((location) => {
-                    console.log("[onLocation]", location);
+                    // console.log("[onLocation]", location);
                     appendLocationLog("Foreground", location);
                 });
 

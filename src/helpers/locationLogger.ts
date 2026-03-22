@@ -46,7 +46,7 @@ export const appendLocationLog = async (source: string, location: any) => {
         emitter.emit(DB_EVENTS.LOGS_UPDATED);
 
 
-        console.log(`Logged to DB and file: ${logEntry.trim()}`);
+        // console.log(`Logged to DB and file: ${logEntry.trim()}`);
     } catch (error) {
         console.error('Failed to write location log:', error);
     }
