@@ -40,5 +40,10 @@ jest.mock('expo-task-manager', () => ({
   defineTask: jest.fn(),
 }));
 
+// Mock expo-updates
+jest.mock('expo-updates', () => ({
+  reloadAsync: jest.fn(),
+}));
+
 // Mock AsyncStorage in context
 global.AsyncStorage = require('@react-native-async-storage/async-storage').default;

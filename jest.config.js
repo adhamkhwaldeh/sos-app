@@ -7,7 +7,7 @@ module.exports = {
     'node_modules/(?!(expo|expo-modules-core|react-native|react-native-gesture-handler|react-native-reanimated|@react-navigation|@react-native-firebase|@react-native|drizzle-orm|eventemitter3|zustand)/)',
   ],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/(.*)$': '<rootDir>/$1',
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
