@@ -1,6 +1,6 @@
 
 
-function firstAvailablity() {
+function firstAvailability() {
 
     //First slots
     const firstPerson = ["09:00-10:30", "12:00-13:00"]
@@ -57,7 +57,7 @@ function firstAvailablity() {
 
     }
 
-    return "There is no availibality ";
+    return "There is no availability ";
 }
 
-console.log(firstAvailablity())
+console.log(firstAvailability())
