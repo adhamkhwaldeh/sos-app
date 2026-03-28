@@ -2,7 +2,7 @@
 
 function firstAvailablity() {
 
-    //First slot
+    //First slots
     const firstPerson = ["09:00-10:30", "12:00-13:00"]
     const secondPerson = ["10:00-11:30", "12:30-14:00"]
 
@@ -10,7 +10,7 @@ function firstAvailablity() {
     // const firstPerson = ["11:00-11:30", "12:00-13:00"]
     // const secondPerson = ["10:00-11:30", "12:30-14:00"]
 
-    //Scond slots
+    //Second slots
     // const firstPerson = ["11:00-11:30", "12:00-13:00"]
     // const secondPerson = ["10:00-11:00", "12:30-14:00"]
 
