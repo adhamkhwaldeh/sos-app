@@ -1,4 +1,5 @@
 import { BondInputs } from '@/src/data/types/BondCalculator';
+import NumbersHelper from '@/src/helpers/NumbersHelper';
 import { LocalizationContext } from '@/src/localization/LocalizationContext';
 import { useBondStore } from '@/src/store/useBondStore';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -7,13 +8,18 @@ import { Controller, useForm } from 'react-hook-form';
 import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, DataTable, HelperText, SegmentedButtons, Text, TextInput, useTheme } from 'react-native-paper';
 
-
-
 export default function BondCalculatorScreen() {
+
+  //Context API for both multiple-themes and languages
+
   const { translations } = useContext(LocalizationContext);
+
   const theme = useTheme();
+
+  //Zustand store for bond calculator as State managment
   const { inputs, results, calculate } = useBondStore();
 
+  //react-hook-form for form validation and submission
   const {
     control,
     handleSubmit,
@@ -37,15 +43,8 @@ export default function BondCalculatorScreen() {
     calculate(inputs);
   }, []);
 
-  const formatCurrency = (value: number) => {
-    return `$${value.toFixed(2)}`;
-  };
 
-  const formatPercentage = (value: number) => {
-    return `${value.toFixed(4)}%`;
-  };
-
-
+  //Date picker state 
   const [date, setDate] = useState(new Date());
 
   const [show, setShow] = useState(false);
@@ -57,6 +56,7 @@ export default function BondCalculatorScreen() {
     setDate(innerDate);
   };
 
+  //react-native-paper as material design library
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Card style={styles.card}>
@@ -196,15 +196,15 @@ export default function BondCalculatorScreen() {
             <Card.Content>
               <View style={styles.resultRow}>
                 <Text variant="titleMedium">{translations.currentYield}:</Text>
-                <Text variant="titleMedium">{formatPercentage(results.currentYield)}</Text>
+                <Text variant="titleMedium">{NumbersHelper.formatPercentage(results.currentYield)}</Text>
               </View>
               <View style={styles.resultRow}>
                 <Text variant="titleMedium">{translations.ytm}:</Text>
-                <Text variant="titleMedium">{formatPercentage(results.ytm)}</Text>
+                <Text variant="titleMedium">{NumbersHelper.formatPercentage(results.ytm)}</Text>
               </View>
               <View style={styles.resultRow}>
                 <Text variant="titleMedium">{translations.totalInterest}:</Text>
-                <Text variant="titleMedium">{formatCurrency(results.totalInterest)}</Text>
+                <Text variant="titleMedium">{NumbersHelper.formatCurrency(results.totalInterest)}</Text>
               </View>
               <View style={styles.resultRow}>
                 <Text variant="titleMedium">{translations.premiumDiscount}:</Text>

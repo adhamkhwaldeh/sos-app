@@ -3,7 +3,6 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
-import { useBackgroundGeolocation } from '@/src/hooks/useBackgroundGeolocation';
 import '@/src/services/tasks/HeadlessTask';
 
 import { StatusBarContext, StatusBarProvider } from '@/src/context/StatusBarContext';
@@ -42,7 +41,8 @@ function RootLayoutContent() {
     notificationService.initialize();
   }, []);
 
-  useBackgroundGeolocation();
+  //Need to be reverse 
+  // useBackgroundGeolocation();
 
   const navigationTheme = isDark ? DarkTheme : DefaultTheme;
 
@@ -59,7 +59,6 @@ function RootLayoutContent() {
     <NavigationThemeProvider value={navigationTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style={isDark ? 'light' : 'dark'} />
     </NavigationThemeProvider>
